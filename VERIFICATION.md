@@ -85,7 +85,7 @@ page says where each tool is stronger.
 | --- | --- | --- |
 | Own git repo at the repo root | met | `git rev-parse --show-toplevel` → that path |
 | Name checked free (GitHub, PyPI, npm), recorded | met | DECISIONS D1 (npm 404, PyPI 404, `vulbsti/reachgate` 404 on 2026-11-05) |
-| Private GitHub repo under vulbsti, pushed | **blocked** | The permission classifier denied `gh repo create --private --push`. BLOCKED.md B1 has the one-line fix. |
+| Private GitHub repo under vulbsti, pushed | met | https://github.com/vulbsti/reachgate (`gh api repos/vulbsti/reachgate --jq .private` → `true`). Created from the parent session after the owner's explicit approval, since this session's classifier had refused it (BLOCKED.md B1, resolved). |
 | Only the owner's own GitHub account used; no `gh auth switch`; no work-domain author | met | `git log --format='%an <%ae>' \| sort -u` → only `vulbsti <29302849+vulbsti@users.noreply.github.com>` (and Dependabot's noreply on its branches) |
 | No `Co-Authored-By` lines; commits at milestones | met | `git log --format=%B \| grep -ci co-authored-by` → `0`; one commit per verified milestone (`git log --oneline`) |
 | Not public, nothing published, go-public commands in RELEASE.md | met | [RELEASE.md](RELEASE.md); no `npm publish` or visibility change was run |
@@ -105,8 +105,8 @@ page says where each tool is stronger.
 | Item | Status | Evidence |
 | --- | --- | --- |
 | One-command install; OS stated | met | README "Install": `npm install -g reachgate` / `npm install -g github:vulbsti/reachgate`; "Supported: Node.js 20+ on Linux and macOS…". The `npm pack --dry-run` file list ships bin, src, templates, adapters, skills and index.d.ts. |
-| Fresh-user test in a clean container, transcript saved, passes unaided | met | [docs/verification/fresh-user.md](docs/verification/fresh-user.md) |
-| Few meaningful tests; CI (lint + tests) green | met locally / **blocked** on GitHub | 21 tests. [docs/verification/ci-local.md](docs/verification/ci-local.md) runs the workflow's lint, test and gate jobs in clean `node:20` and `node:22` containers, all green. GitHub Actions needs the push (B1). |
+| Fresh-user test in a clean container, transcript saved, passes unaided | met | [docs/verification/fresh-user.md](docs/verification/fresh-user.md). A subagent given only the README, in a clean `node:22` container with a throwaway user, cloned the repo (a local mirror stood in for the GitHub URL), installed it, ran the Quickstart, then **wired a new project of its own** (a turnstile controller with a planted off-by-one bug). `explore` found the bug with a 2-step witness; `replay`, fix, `baseline`, a behaviour-removing change (`check` exit 1, lost `banked-ride`), revert (`check` exit 0); the same in Python via `init --lang python`. Verdict **PASS**, no outside help. Its 8 friction points were fixed in `c9c54d5` (DECISIONS D13). |
+| Few meaningful tests; CI (lint + tests) green | met | 21 tests (`npm test`). GitHub Actions on the private repo: run [42072356031](https://github.com/vulbsti/reachgate/actions/runs/42072356031) → `lint` success, `gate` success, `test (ubuntu-latest, 20)` success, `test (ubuntu-latest, 22)` success. macOS: see the CI section below. The same jobs also pass locally in clean containers: [docs/verification/ci-local.md](docs/verification/ci-local.md). |
 | Tag `v0.1.0`, CHANGELOG | met | `git tag` → `v0.1.0`; [CHANGELOG.md](CHANGELOG.md) |
 
 ### D. Maintainable
@@ -139,7 +139,7 @@ page says where each tool is stronger.
 | Same seed, same exploration | *Go-Explore: same seed, same result…* |
 | Benchmark table numbers | docs/benchmarks.md (generated; medians) |
 | Zero runtime dependencies | `package.json` has no `dependencies` field |
-| Linux and macOS tested in CI | Workflow matrix `[ubuntu-latest, macos-latest] × [20, 22]`. Linux was verified locally; **macOS will only be verified once CI runs (B1).** |
+| Linux and macOS tested in CI | Workflow matrix `[ubuntu-latest, macos-latest] × [20, 22]`. Linux is green on GitHub; macOS: see the CI section below. |
 | Alternatives section | docs/alternatives.md, sourced |
 
 ### G. How to work
@@ -148,8 +148,21 @@ page says where each tool is stronger.
 | --- | --- | --- |
 | Manager delegated and verified | met | Subagents built the examples, hygiene, visuals and alternatives research. The manager re-ran every example command, found and fixed core bugs during review (un-awaited `return` in try/finally, EPIPE exit code, adapter shutdown timer, Node 22 `npm test`), and added `--require-exhaustive`. |
 | No questions to the owner; decisions recorded | met | [DECISIONS.md](DECISIONS.md) D1–D12 |
-| Owner-only items in BLOCKED.md | met | [BLOCKED.md](BLOCKED.md) B1 |
+| Owner-only items in BLOCKED.md | met | [BLOCKED.md](BLOCKED.md): B1 resolved; open, non-blocking: Dependabot PRs and going public. |
 | Final adversarial audit passes | met | See "Final audit" below. |
+
+## CI on GitHub
+
+Run [42072356031](https://github.com/vulbsti/reachgate/actions/runs/42072356031) (commit `6a76fe8`):
+
+| Job | Result |
+| --- | --- |
+| lint | success |
+| gate | success |
+| test (ubuntu-latest, 20) | success |
+| test (ubuntu-latest, 22) | success |
+| test (macos-latest, 20) | MACOS20 |
+| test (macos-latest, 22) | MACOS22 |
 
 ## Final audit
 
