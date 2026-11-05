@@ -3,10 +3,12 @@
 # Usage: scripts/ci-local.sh [20 22 ...]   (default: 20 22)
 set -euo pipefail
 cd "$(dirname "$0")/.."
-versions=("${@:-20 22}")
+versions=("$@")
 [ $# -eq 0 ] && versions=(20 22)
-src=$(mktemp -d)
-git ls-files -z --cached --others --exclude-standard | xargs -0 -I{} cp --parents {} "$src"/
+# CI tests what is committed: export HEAD (under $HOME, since some Docker setups can't mount /tmp).
+mkdir -p "$HOME/.cache"
+src=$(mktemp -d "$HOME/.cache/reachgate-ci.XXXXXX")
+git archive HEAD | tar -x -C "$src"
 for v in "${versions[@]}"; do
   echo "=== node $v ==="
   docker run --rm -v "$src:/src:ro" "node:$v-bookworm-slim" bash -euc '
