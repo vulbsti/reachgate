@@ -9,7 +9,7 @@ reachgate explores the reachable states of the project's real code (BFS or Go-Ex
 invariants in every state, returns the shortest replayable witness trace for each violation, and
 compares reachable behaviour against a recorded baseline (`reachgate.baseline.json`).
 
-Run it with `reachgate`, or `npx reachgate` if it isn't installed globally.
+Run it with `reachgate` (or `npx reachgate` once it is published to npm).
 
 ## Before calling a change done (the project is already wired)
 

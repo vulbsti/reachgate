@@ -1,21 +1,18 @@
 # Blocked: needs the owner
 
-## B1. Creating and pushing the private GitHub repo was denied by the session's permission classifier
+Nothing is currently blocked.
 
-- **What:** `GH_TOKEN=$(gh auth token -u vulbsti) gh repo create vulbsti/reachgate --private --source . --push`
-  (the exact command from `OSS_STANDARD.md` A) was refused by Claude Code's auto-mode classifier
-  ("Public Data-Sharing Upload"), even though the repo is created **private**.
-- **Not worked around:** pushing by any other route would defeat the point of the check, so nothing was
-  pushed.
-- **What depends on it:** the private repo URL, CI running on GitHub (the workflow is in
-  `.github/workflows/ci.yml` and every job was run locally, see `VERIFICATION.md`), and pushing the
-  `v0.1.0` tag.
-- **To unblock (owner, about 1 minute):** run from the repo root:
+## Resolved
 
-  ```bash
-  GH_TOKEN=$(gh auth token -u vulbsti) gh repo create vulbsti/reachgate --private --source . --push
-  git push origin v0.1.0
-  GH_TOKEN=$(gh auth token -u vulbsti) gh run watch --repo vulbsti/reachgate --exit-status
-  ```
+### B1. Creating and pushing the private GitHub repo (resolved 2026-11-05)
+- The session's permission classifier refused `gh repo create vulbsti/reachgate --private --source . --push`
+  ("Public Data-Sharing Upload"), even though the repo is private. The agent did not work around it.
+- The owner approved it explicitly, and the private repo was created from the parent session:
+  https://github.com/vulbsti/reachgate (private, `origin` over HTTPS). Later pushes use
+  `GH_TOKEN=$(gh auth token -u vulbsti) git push`.
 
-  Alternatively, allow that command for the session, and an agent can finish it.
+## Open for the owner (not blocking)
+
+- **Dependabot PRs** bumping `actions/checkout`, `actions/setup-node` and `actions/setup-python` opened
+  as soon as the repo existed. They are routine. Review and merge them, or close them, as you prefer.
+- **Going public / publishing**: see [RELEASE.md](RELEASE.md). Nothing has been made public or published.

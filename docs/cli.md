@@ -44,7 +44,7 @@ The rule behind 3 comes from "unmeasured = FAIL": reachgate never reports a pass
 | `--seed N` | 1 | PRNG seed for Go-Explore. |
 | `--rollout N` | 12 | Go-Explore: most steps taken per return to a cell. |
 | `--no-action-labels` | off | Leaves `action:<label>` out of the signature, so only `observe()` labels are tracked. |
-| `--expand-violations` | off | Keeps exploring past states that violate an invariant. |
+| `--expand-violations` | off | Keeps exploring past states that violate an invariant. By default they aren't expanded, and while a violation is open, the report warns that the other invariants were only checked on the remaining states. |
 | `--require-exhaustive` | off | Exits 3 instead of 0 when the search stopped on a budget rather than exhausting the state space. Use it in CI when the scenario is meant to be finite, so a pass always means "every reachable state was checked". Config key: `"requireExhaustive": true`. |
 | `--cmd "<command>"` | | Runs the target through the adapter. |
 | `--config FILE` | `reachgate.config.json` | |
@@ -52,7 +52,7 @@ The rule behind 3 comes from "unmeasured = FAIL": reachgate never reports a pass
 | `--out DIR` | `.reachgate` | Where reports, diffs and witnesses go. |
 | `--fail-on LIST` | `lost,violation` | `check` only: any of `lost` (label no longer reachable), `violation` (newly violated invariant), `new` (label newly reachable), `removed` (invariant removed). |
 | `--json` | off | Prints the JSON report to stdout instead of the summary. |
-| `--quiet` | off | No progress line on stderr. |
+| `--quiet` | off | No progress line on stderr. The summary still prints; use `--json` for machine output. |
 
 ## `reachgate.config.json`
 

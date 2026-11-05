@@ -71,7 +71,7 @@ export async function explore(driver, options = {}) {
   if (!['bfs', 'go-explore'].includes(opts.strategy)) throw new Error(`unknown strategy "${opts.strategy}" (use bfs or go-explore)`);
   const t0 = performance.now();
   const clock = () => Math.round(performance.now() - t0);
-  const stats = { steps: 0, states: 0, cells: 0, depth: 0, stoppedBy: null, exhaustive: false, ms: 0, firstViolation: null };
+  const stats = { steps: 0, states: 0, cells: 0, depth: 0, unexpanded: 0, stoppedBy: null, exhaustive: false, ms: 0, firstViolation: null };
   const rec = new Recorder(driver, opts, clock);
   const progress = opts.onProgress ?? (() => {});
   let lastProgress = 0;
@@ -99,6 +99,9 @@ export async function explore(driver, options = {}) {
   // Turn search nodes into traces, shrink (Go-Explore) and replay every witness to prove it reproduces.
   const warnings = [];
   if (stats.stoppedBy === 'time') warnings.push(`stopped on the time cap (${opts.maxSeconds}s), not the step budget: this run is not reproducible. Raise --max-seconds or lower --max-steps.`);
+  if (stats.unexpanded && rec.violations.size && [...driver.invariantIds, ...driver.transitionIds].some((id) => !rec.violations.has(id))) {
+    warnings.push(`${stats.unexpanded} state(s) that violate an invariant were not explored further, so the invariants reported as holding were only checked on the other states. Fix the violations, or rerun with --expand-violations to check past them.`);
+  }
   const violations = [];
   for (const v of rec.violations.values()) {
     let trace = traceOf(v.node), shrunk = null;
@@ -151,7 +154,10 @@ async function bfs(driver, opts, stats, rec, outOfBudget, { s0, root, info0 }) {
   while (head < queue.length) {
     const item = queue[head];
     queue[head++] = undefined;
-    if (item.bad && !opts.expandViolations) continue;
+    if (item.bad && !opts.expandViolations) {
+      stats.unexpanded++;
+      continue;
+    }
     if (item.node.depth >= opts.maxDepth) continue;
     for (const a of item.actions) {
       const stop = outOfBudget();
@@ -237,7 +243,10 @@ async function goExplore(driver, opts, stats, rec, outOfBudget, { s0, root, info
       }
       if (child.depth > stats.depth) stats.depth = child.depth;
       rec.see(info, child, stats);
-      if ((info.violations.length || r.violations.length) && !opts.expandViolations) break;
+      if ((info.violations.length || r.violations.length) && !opts.expandViolations) {
+        stats.unexpanded++;
+        break;
+      }
       addCell(info.cell ?? info.hash, child, r.state, info.actions);
       state = r.state;
       node = child;

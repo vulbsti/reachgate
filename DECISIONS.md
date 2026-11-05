@@ -84,3 +84,14 @@ each one records why, so it can be revisited.
 - `close()` used to leave its 500 ms grace timer armed (+500 ms on every adapter run) and SIGTERM the
   adapter right after its shutdown reply. It now clears the timer and kills only if the process hasn't
   exited within the grace period. Found by the benchmark work.
+
+## D13. Violating states are not expanded by default, and the report says so
+- Keeping it: a state that violates an invariant usually leads to more of the same breakage, and TLC also
+  stops at a violation. With expansion on, witness lengths for every example stay identical, but state
+  counts grow, and the todo example no longer exhausts within its default budget.
+- The fresh-user test showed the cost: a second invariant read "holds" although the (unfixed) bug also
+  broke it further along. So the run now counts `stats.unexpanded`, prints a warning, and the
+  Markdown report marks holding invariants as "yes, outside the violating states" whenever any state
+  was not expanded. `--expand-violations` checks past them.
+- Stale witness files from earlier runs are now cleared on each run (only `*.json` in the output's
+  `witnesses/` folder), because the fresh user read them as still-open violations.

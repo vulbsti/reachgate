@@ -4,8 +4,7 @@ This guide wires reachgate into an existing project: a small vending-machine con
 heard of reachgate. Every output below is pasted from a real run. Python projects follow the same
 steps with `reachgate init --lang python` (see the end).
 
-**You need:** Node.js 20 or newer, and `npm install -g reachgate` (or prefix every command with
-`npx reachgate`).
+**You need:** Node.js 20 or newer and reachgate installed (see the README's Install section).
 
 ## 0. The code you already have (`src/vending.js`)
 
@@ -42,8 +41,9 @@ $ reachgate init
 wrote reachgate.target.mjs, reachgate.config.json
 ```
 
-`reachgate.target.mjs` contains a working toy target (a door with a lock) that shows each hook. Replace
-it with a target that drives your code.
+`reachgate.target.mjs` contains a toy target (a door with a lock) that shows each hook. It has a deliberate
+bug (you can lock an open door), so `reachgate explore` on it fails. Replace it with a target that drives
+your code.
 
 ## 2. Describe the code as a target (10 minutes)
 
@@ -87,7 +87,7 @@ What each hook is for:
 | `initial()` | Must return the same state every call. Inject clocks, random seeds and generated IDs. |
 | `affordances(s)` | Everything that can happen next, **including the environment** (a payment provider's reply, a timeout, a second user). Keep value domains small: two or three IDs, coin values, quantity caps. |
 | `step(s, a)` | Calls your code. reachgate passes a copy of `s`, so mutating it is fine. |
-| `invariants` | Must be true in every reachable state. Return `true`, or a string saying what's wrong. Use ghost variables (like `inserted`) for facts your code doesn't keep. |
+| `invariants` | Must be true in every reachable state. reachgate also adds a built-in `no-crash` invariant: `step`, `affordances` and `observe` must never throw (and `deadlock` when you define `isTerminal`). Return `true`, or a string saying what's wrong. Use ghost variables (like `inserted`) for facts your code doesn't keep. |
 | `observe(s)` | Names for behaviour you want to keep reachable. The baseline gate tracks these, plus `action:<label>` for every action that is ever offered. |
 | `label(a)` | How an action prints in witnesses. |
 | `isTerminal(s)` | Optional. Defining it turns on deadlock detection. |
@@ -123,6 +123,7 @@ FAIL: 1 invariant violated · 118 states, 224 steps, 8 labels · state space exh
   ✗ money-conserved: inserted 100, but cashbox 100 + credit 100 + returned 0 = 200
     witness (2 steps, shortest): insert 100 → select chips
     replay: reachgate replay ./reachgate.target.mjs .reachgate/witnesses/money-conserved.json
+warning: 64 state(s) that violate an invariant were not explored further, so the invariants reported as holding were only checked on the other states. Fix the violations, or rerun with --expand-violations to check past them.
 report: .reachgate/report.md
 ```
 
@@ -148,6 +149,11 @@ PASS: 0 invariants violated · 179 states, 681 steps, 8 labels · state space ex
 ```
 
 "State space exhausted" means every reachable state of this bounded scenario was checked, not a sample.
+
+One thing to know: by default a state that violates an invariant isn't explored further, since its
+successors are usually more of the same breakage. While a violation is open, the other invariants are
+only checked on the states that don't violate anything, and reachgate prints a warning saying so. Fix the
+violation, or run with `--expand-violations` to keep exploring past it.
 
 ## 5. Record the baseline (1 minute)
 
@@ -201,10 +207,11 @@ Add to `CLAUDE.md` / `AGENTS.md`:
 say why and run `reachgate baseline` to accept it. Never edit reachgate.baseline.json by hand.
 ```
 
-Claude Code users can install the bundled skill instead (see the README). In CI:
+Claude Code users can install the bundled skill instead (see the README). In CI, install reachgate the
+same way as locally, then:
 
 ```yaml
-- run: npx reachgate check --quiet
+- run: reachgate check --quiet --require-exhaustive   # drop --require-exhaustive if the space is too big to exhaust
 ```
 
 ## Python projects

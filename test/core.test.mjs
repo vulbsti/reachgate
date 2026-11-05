@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -129,6 +129,8 @@ test('CLI exit codes: 0 pass, 1 violation, 2 usage, 3 could not measure', () => 
   assert.equal(report.exitCode, 1);
   assert.equal(cli(['replay', 'bad.mjs', report.violations[0].witnessFile], dir).status, 0);
   assert.equal(cli(['replay', 'ok.mjs', report.violations[0].witnessFile], dir).status, 1); // replays, but no longer violates
+  assert.equal(cli(['explore', 'ok.mjs', '--quiet'], dir).status, 0);
+  assert.deepEqual(readdirSync(join(dir, '.reachgate', 'witnesses')), []); // a fixed violation leaves no stale witness
   assert.equal(cli(['explore', 'missing.mjs'], dir).status, 2);
   assert.equal(cli(['explore', 'ok.mjs', '--max-steps', 'lots'], dir).status, 2);
   assert.equal(cli(['check', 'ok.mjs'], dir).status, 2); // no baseline yet

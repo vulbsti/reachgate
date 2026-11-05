@@ -26,8 +26,8 @@ npm install -g reachgate          # once published (see RELEASE.md)
 npm install -g github:vulbsti/reachgate   # straight from GitHub
 ```
 
-Or from a clone: `git clone https://github.com/vulbsti/reachgate && npm install -g ./reachgate`.
-`npx reachgate ...` works too, without a global install.
+Or from a clone: `git clone https://github.com/vulbsti/reachgate && npm install -g ./reachgate`. That
+links the clone, so keep it. Once the package is on npm, `npx reachgate ...` works without installing.
 
 **Supported:** Node.js 20 or newer on Linux and macOS (both tested in CI). Python 3.9+ for Python
 targets. Windows is untested.
@@ -186,6 +186,10 @@ say why and run `reachgate baseline` to accept it. Never edit reachgate.baseline
 | 1 | fail: an invariant is violated (`explore`), or a regression against the baseline (`check`) |
 | 2 | usage or config error |
 | 3 | could not measure: `initial()` threw, the adapter died, a witness didn't replay deterministically, or `--require-exhaustive` and the search stopped on a budget |
+
+`reachgate replay` uses the same scale: 0 when the witness reproduces its violation (or reaches its
+label), 1 when it replays but the violation no longer happens (fixed?), and 3 when it no longer replays
+(a step stopped being offered).
 
 Reports go to `.reachgate/` (`report.json`, `report.md`, `diff.json`, `diff.md`, `witnesses/*.json`).
 See the [CLI reference](docs/cli.md).

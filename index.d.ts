@@ -84,6 +84,8 @@ export interface Stats {
   states: number;
   cells: number;
   depth: number;
+  /** States not explored further because they violate an invariant (0 with expandViolations). */
+  unexpanded: number;
   stoppedBy: 'steps' | 'states' | 'time' | 'exhausted';
   exhaustive: boolean;
   ms: number;

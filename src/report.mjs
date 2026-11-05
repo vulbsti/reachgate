@@ -58,8 +58,9 @@ export function exploreMarkdown(result, { witnessFiles = {}, driver }) {
   for (const inv of result.invariants) {
     const v = result.violations.find((x) => x.id === inv.id);
     const name = inv.description ? `\`${inv.id}\`: ${esc(inv.description)}` : `\`${inv.id}\``;
-    L.push(`| ${name} | ${v ? `**no** (${v.count}×)` : 'yes'} | ${v ? `${v.length} steps${v.shortest ? ' (shortest)' : ` (${v.minimal})`}${witnessFiles[v.id] ? ` · \`${witnessFiles[v.id]}\`` : ''}` : ''} |`);
+    L.push(`| ${name} | ${v ? `**no** (${v.count}×)` : s.unexpanded && result.violations.length ? 'yes, outside the violating states*' : 'yes'} | ${v ? `${v.length} steps${v.shortest ? ' (shortest)' : ` (${v.minimal})`}${witnessFiles[v.id] ? ` · \`${witnessFiles[v.id]}\`` : ''}` : ''} |`);
   }
+  if (s.unexpanded && result.violations.length) L.push('', `\\* ${s.unexpanded} state(s) that violate an invariant were not explored further (the default). Rerun with \`--expand-violations\` to check the other invariants past them.`);
   for (const v of result.violations) {
     L.push('', `## Violation: \`${v.id}\``, '');
     if (v.message) L.push(`> ${esc(v.message)}`, '');

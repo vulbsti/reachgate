@@ -1,5 +1,5 @@
 // The reachgate command line. See `reachgate help` and docs/cli.md.
-import { mkdirSync, writeFileSync, readFileSync, existsSync, copyFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readFileSync, existsSync, copyFileSync, readdirSync, rmSync } from 'node:fs';
 import { resolve, join, relative, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadDriver, readConfig } from './load.mjs';
@@ -42,7 +42,7 @@ Options:
   --out DIR                   where reports and witnesses go (default .reachgate)
   --fail-on LIST              check: comma list of lost,violation,new,removed (default lost,violation)
   --json                      print the JSON report to stdout instead of the summary
-  --quiet                     no progress output
+  --quiet                     no progress line on stderr (the summary still prints)
 
 Exit codes: 0 pass · 1 fail (violation found, or check found a regression) · 2 usage/config error ·
             3 could not measure (target crashed in initial(), adapter died, witness not deterministic)`;
@@ -134,6 +134,8 @@ export async function main(argv = process.argv.slice(2), io = { out: (s) => proc
     const incomplete = requireExhaustive && !result.stats.exhaustive;
     if (incomplete) result.warnings.push(`--require-exhaustive: the search stopped on the ${result.stats.stoppedBy} budget after ${result.stats.states} states, so not every reachable state was checked. Bound the scenario or raise the budget.`);
     mkdirSync(join(outDir, 'witnesses'), { recursive: true });
+    // Witnesses from earlier runs would look like open violations: clear the ones reachgate wrote.
+    for (const f of readdirSync(join(outDir, 'witnesses'))) if (f.endsWith('.json')) rmSync(join(outDir, 'witnesses', f));
     const witnessFiles = {};
     for (const v of result.violations) {
       const f = join(outDir, 'witnesses', `${v.id.replace(/[^\w.-]+/g, '_')}.json`);
