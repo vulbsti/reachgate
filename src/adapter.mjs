@@ -142,13 +142,19 @@ export async function adapterDriver(cmd, { cwd = process.cwd(), timeoutMs = 3000
     },
     async close() {
       if (dead) return;
+      // Ask politely, then give the process up to 500 ms to exit by itself before killing it. Timers
+      // are cleared so a fast adapter doesn't keep reachgate alive for the full grace period.
+      const exited = new Promise((res) => child.once('exit', res));
+      let timer;
+      const grace = new Promise((res) => { timer = setTimeout(res, 500); });
       try {
-        await Promise.race([request('shutdown'), new Promise((res) => setTimeout(res, 500))]);
+        await Promise.race([request('shutdown').then(() => Promise.race([exited, grace])), grace]);
       } catch {
         /* already gone */
       }
+      clearTimeout(timer);
       dead = new TargetError('adapter closed', { fatal: true });
-      child.kill();
+      if (child.exitCode === null && child.signalCode === null) child.kill();
     },
   };
 }

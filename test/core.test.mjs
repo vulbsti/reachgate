@@ -133,6 +133,8 @@ test('CLI exit codes: 0 pass, 1 violation, 2 usage, 3 could not measure', () => 
   assert.equal(cli(['explore', 'ok.mjs', '--max-steps', 'lots'], dir).status, 2);
   assert.equal(cli(['check', 'ok.mjs'], dir).status, 2); // no baseline yet
   assert.equal(cli(['explore', 'boom.mjs'], dir).status, 3);
+  assert.equal(cli(['explore', 'ok.mjs', '--max-steps', '1', '--require-exhaustive', '--quiet'], dir).status, 3); // partial search: not a pass
+  assert.equal(cli(['explore', 'ok.mjs', '--require-exhaustive', '--quiet'], dir).status, 0);
   // the gate: baseline on ok, then check bad
   assert.equal(cli(['baseline', 'ok.mjs', '--quiet'], dir).status, 0);
   assert.equal(cli(['check', 'ok.mjs', '--quiet'], dir).status, 0);

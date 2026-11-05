@@ -28,7 +28,7 @@ These are stable, and safe to gate CI and agents on.
 | **0** | no invariant violated | baseline written | nothing got worse than the baseline | the trace replays, and its recorded violation reproduces (or, for a label witness, the label is reached) |
 | **1** | at least one invariant violated (witnesses written) | — | a regression: a label is no longer reachable, or an invariant is newly violated (see `--fail-on`) | the trace replays, but the recorded violation no longer happens or the label is not reached |
 | **2** | usage or config error: unknown option, missing target, missing baseline for `check`, bad witness path | same | same | same |
-| **3** | could not measure: `initial()` threw, the adapter died or broke protocol, or a witness did not replay deterministically | same | same | the trace diverged: a step is no longer offered by `affordances()`, or it throws |
+| **3** | could not measure: `initial()` threw, the adapter died or broke protocol, a witness did not replay deterministically, or `--require-exhaustive` was set and the search stopped on a budget | same | same | the trace diverged: a step is no longer offered by `affordances()`, or it throws |
 
 The rule behind 3 comes from "unmeasured = FAIL": reachgate never reports a pass it couldn't measure.
 
@@ -45,6 +45,7 @@ The rule behind 3 comes from "unmeasured = FAIL": reachgate never reports a pass
 | `--rollout N` | 12 | Go-Explore: most steps taken per return to a cell. |
 | `--no-action-labels` | off | Leaves `action:<label>` out of the signature, so only `observe()` labels are tracked. |
 | `--expand-violations` | off | Keeps exploring past states that violate an invariant. |
+| `--require-exhaustive` | off | Exits 3 instead of 0 when the search stopped on a budget rather than exhausting the state space. Use it in CI when the scenario is meant to be finite, so a pass always means "every reachable state was checked". Config key: `"requireExhaustive": true`. |
 | `--cmd "<command>"` | | Runs the target through the adapter. |
 | `--config FILE` | `reachgate.config.json` | |
 | `--baseline FILE` | `reachgate.baseline.json` | |

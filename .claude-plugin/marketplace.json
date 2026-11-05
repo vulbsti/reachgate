@@ -1,6 +1,11 @@
 {
   "name": "reachgate",
-  "owner": { "name": "vulbsti" },
+  "owner": {
+    "name": "vulbsti"
+  },
+  "metadata": {
+    "description": "reachgate: a behavioural baseline gate for coding agents (explore reachable states, check invariants, replayable witnesses, baseline diffs)."
+  },
   "plugins": [
     {
       "name": "reachgate",

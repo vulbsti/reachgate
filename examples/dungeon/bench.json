@@ -1,0 +1,14 @@
+{
+  "variants": [
+    { "target": "target.mjs", "strategy": "bfs" },
+    { "target": "target.mjs#fixed", "strategy": "bfs" },
+    { "target": "target.mjs#deep", "strategy": "bfs", "maxSteps": 200000 },
+    { "target": "target.mjs#deep", "strategy": "bfs", "maxSteps": 2000000, "maxStates": 5000000, "maxSeconds": 600 },
+    { "target": "target.mjs#deep", "strategy": "go-explore", "maxSteps": 200000, "seed": 1 },
+    { "target": "target.mjs#deep", "strategy": "go-explore", "maxSteps": 200000, "seed": 2 },
+    { "target": "target.mjs#deep", "strategy": "go-explore", "maxSteps": 200000, "seed": 3 },
+    { "target": "target.mjs#deep", "strategy": "go-explore", "maxSteps": 200000, "seed": 4 },
+    { "target": "target.mjs#deep", "strategy": "go-explore", "maxSteps": 200000, "seed": 5 },
+    { "target": "target.mjs#deepFixed", "strategy": "go-explore", "maxSteps": 200000, "seed": 1 }
+  ]
+}

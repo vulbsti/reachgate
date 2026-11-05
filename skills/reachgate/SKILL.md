@@ -48,7 +48,9 @@ Run it with `reachgate`, or `npx reachgate` if it isn't installed globally.
 5. Add this to the project's agent instructions (`CLAUDE.md` / `AGENTS.md`):
    "Before calling a change done, `reachgate check` must pass. Quote its verdict line. If behaviour
    was removed on purpose, say why and run `reachgate baseline`."
-6. In CI, run `reachgate check --quiet`. A non-zero exit fails the build.
+6. In CI, run `reachgate check --quiet`. A non-zero exit fails the build. If the scenario is meant to be finite,
+   add `--require-exhaustive` (or `"requireExhaustive": true` in the config), so a pass always means every
+   reachable state was checked, not just the ones that fit the budget.
 
 ## Choosing a strategy
 

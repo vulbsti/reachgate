@@ -1,0 +1,963 @@
+{
+ "machine": {
+  "cpu": "AMD Ryzen AI 7 PRO 350 w/ Radeon 860M",
+  "cores": 16,
+  "memoryGb": 59,
+  "os": "Linux 6.17.0-1033-oem",
+  "node": "v26.9.0",
+  "python": "3.12.3",
+  "loadAvg": "7.31 7.89 4.81",
+  "date": "2026-11-05",
+  "rss": "Node: /usr/bin/time -f %M on the CLI process for JS targets, process.resourceUsage().maxRSS inside the CLI for Python targets (Node only). Python adapter: getrusage(RUSAGE_SELF) inside the adapter process (bench/py_rss.py)."
+ },
+ "runs": 3,
+ "examples": [
+  {
+   "name": "auth-session",
+   "variants": [
+    {
+     "target": "target.mjs",
+     "strategy": "bfs",
+     "runs": [
+      {
+       "exitCode": 1,
+       "wallMs": 308,
+       "nodeRssKb": 84484,
+       "exploreMs": 262,
+       "states": 2688,
+       "steps": 23247,
+       "depth": 15,
+       "stoppedBy": "exhausted",
+       "exhaustive": true,
+       "violations": [
+        "locked-has-no-new-session"
+       ],
+       "firstViolation": {
+        "id": "locked-has-no-new-session",
+        "ms": 61,
+        "steps": 3299,
+        "witness": 7,
+        "minimal": "shortest"
+       }
+      },
+      {
+       "exitCode": 1,
+       "wallMs": 309,
+       "nodeRssKb": 85976,
+       "exploreMs": 269,
+       "states": 2688,
+       "steps": 23247,
+       "depth": 15,
+       "stoppedBy": "exhausted",
+       "exhaustive": true,
+       "violations": [
+        "locked-has-no-new-session"
+       ],
+       "firstViolation": {
+        "id": "locked-has-no-new-session",
+        "ms": 50,
+        "steps": 3299,
+        "witness": 7,
+        "minimal": "shortest"
+       }
+      },
+      {
+       "exitCode": 1,
+       "wallMs": 403,
+       "nodeRssKb": 85504,
+       "exploreMs": 348,
+       "states": 2688,
+       "steps": 23247,
+       "depth": 15,
+       "stoppedBy": "exhausted",
+       "exhaustive": true,
+       "violations": [
+        "locked-has-no-new-session"
+       ],
+       "firstViolation": {
+        "id": "locked-has-no-new-session",
+        "ms": 50,
+        "steps": 3299,
+        "witness": 7,
+        "minimal": "shortest"
+       }
+      }
+     ],
+     "median": {
+      "wallMs": 309,
+      "exploreMs": 269,
+      "firstViolationMs": 50,
+      "nodeRssKb": 85504,
+      "adapterRssKb": null,
+      "deterministic": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "checkout-py",
+   "variants": [
+    {
+     "target": "target.py",
+     "strategy": "bfs",
+     "runs": [
+      {
+       "exitCode": 1,
+       "wallMs": 854,
+       "nodeRssKb": 85064,
+       "adapterRssKb": 12996,
+       "exploreMs": 712,
+       "states": 4290,
+       "steps": 5751,
+       "depth": 12,
+       "stoppedBy": "exhausted",
+       "exhaustive": true,
+       "violations": [
+        "charged-equals-total",
+        "single-capture"
+       ],
+       "firstViolation": {
+        "id": "charged-equals-total",
+        "ms": 176,
+        "steps": 1319,
+        "witness": 6,
+        "minimal": "shortest"
+       }
+      },
+      {
+       "exitCode": 1,
+       "wallMs": 784,
+       "nodeRssKb": 85460,
+       "adapterRssKb": 12892,
+       "exploreMs": 677,
+       "states": 4290,
+       "steps": 5751,
+       "depth": 12,
+       "stoppedBy": "exhausted",
+       "exhaustive": true,
+       "violations": [
+        "charged-equals-total",
+        "single-capture"
+       ],
+       "firstViolation": {
+        "id": "charged-equals-total",
+        "ms": 224,
+        "steps": 1319,
+        "witness": 6,
+        "minimal": "shortest"
+       }
+      },
+      {
+       "exitCode": 1,
+       "wallMs": 621,
+       "nodeRssKb": 85868,
+       "adapterRssKb": 13196,
+       "exploreMs": 553,
+       "states": 4290,
+       "steps": 5751,
+       "depth": 12,
+       "stoppedBy": "exhausted",
+       "exhaustive": true,
+       "violations": [
+        "charged-equals-total",
+        "single-capture"
+       ],
+       "firstViolation": {
+        "id": "charged-equals-total",
+        "ms": 122,
+        "steps": 1319,
+        "witness": 6,
+        "minimal": "shortest"
+       }
+      }
+     ],
+     "median": {
+      "wallMs": 784,
+      "exploreMs": 677,
+      "firstViolationMs": 176,
+      "nodeRssKb": 85460,
+      "adapterRssKb": 12996,
+      "deterministic": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "dungeon",
+   "variants": [
+    {
+     "target": "target.mjs",
+     "strategy": "bfs",
+     "runs": [
+      {
+       "exitCode": 1,
+       "wallMs": 389,
+       "nodeRssKb": 107796,
+       "exploreMs": 346,
+       "states": 10772,
+       "steps": 35881,
+       "depth": 32,
+       "stoppedBy": "exhausted",
+       "exhaustive": true,
+       "violations": [
+        "no-softlock"
+       ],
+       "firstViolation": {
+        "id": "no-softlock",
+        "ms": 54,
+        "steps": 3027,
+        "witness": 13,
+        "minimal": "shortest"
+       }
+      },
+      {
+       "exitCode": 1,
+       "wallMs": 443,
+       "nodeRssKb": 108368,
+       "exploreMs": 402,
+       "states": 10772,
+       "steps": 35881,
+       "depth": 32,
+       "stoppedBy": "exhausted",
+       "exhaustive": true,
+       "violations": [
+        "no-softlock"
+       ],
+       "firstViolation": {
+        "id": "no-softlock",
+        "ms": 56,
+        "steps": 3027,
+        "witness": 13,
+        "minimal": "shortest"
+       }
+      },
+      {
+       "exitCode": 1,
+       "wallMs": 427,
+       "nodeRssKb": 106836,
+       "exploreMs": 384,
+       "states": 10772,
+       "steps": 35881,
+       "depth": 32,
+       "stoppedBy": "exhausted",
+       "exhaustive": true,
+       "violations": [
+        "no-softlock"
+       ],
+       "firstViolation": {
+        "id": "no-softlock",
+        "ms": 51,
+        "steps": 3027,
+        "witness": 13,
+        "minimal": "shortest"
+       }
+      }
+     ],
+     "median": {
+      "wallMs": 427,
+      "exploreMs": 384,
+      "firstViolationMs": 54,
+      "nodeRssKb": 107796,
+      "adapterRssKb": null,
+      "deterministic": true
+     }
+    },
+    {
+     "target": "target.mjs#fixed",
+     "strategy": "bfs",
+     "runs": [
+      {
+       "exitCode": 0,
+       "wallMs": 615,
+       "nodeRssKb": 107848,
+       "exploreMs": 558,
+       "states": 11306,
+       "steps": 37594,
+       "depth": 32,
+       "stoppedBy": "exhausted",
+       "exhaustive": true,
+       "violations": [],
+       "firstViolation": null
+      },
+      {
+       "exitCode": 0,
+       "wallMs": 708,
+       "nodeRssKb": 107192,
+       "exploreMs": 641,
+       "states": 11306,
+       "steps": 37594,
+       "depth": 32,
+       "stoppedBy": "exhausted",
+       "exhaustive": true,
+       "violations": [],
+       "firstViolation": null
+      },
+      {
+       "exitCode": 0,
+       "wallMs": 571,
+       "nodeRssKb": 107612,
+       "exploreMs": 520,
+       "states": 11306,
+       "steps": 37594,
+       "depth": 32,
+       "stoppedBy": "exhausted",
+       "exhaustive": true,
+       "violations": [],
+       "firstViolation": null
+      }
+     ],
+     "median": {
+      "wallMs": 615,
+      "exploreMs": 558,
+      "firstViolationMs": null,
+      "nodeRssKb": 107612,
+      "adapterRssKb": null,
+      "deterministic": true
+     }
+    },
+    {
+     "target": "target.mjs#deep",
+     "strategy": "bfs",
+     "maxSteps": 200000,
+     "runs": [
+      {
+       "exitCode": 0,
+       "wallMs": 3805,
+       "nodeRssKb": 208972,
+       "exploreMs": 3747,
+       "states": 66774,
+       "steps": 200000,
+       "depth": 32,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [],
+       "firstViolation": null
+      },
+      {
+       "exitCode": 0,
+       "wallMs": 3813,
+       "nodeRssKb": 208728,
+       "exploreMs": 3748,
+       "states": 66774,
+       "steps": 200000,
+       "depth": 32,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [],
+       "firstViolation": null
+      },
+      {
+       "exitCode": 0,
+       "wallMs": 3507,
+       "nodeRssKb": 211888,
+       "exploreMs": 3444,
+       "states": 66774,
+       "steps": 200000,
+       "depth": 32,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [],
+       "firstViolation": null
+      }
+     ],
+     "median": {
+      "wallMs": 3805,
+      "exploreMs": 3747,
+      "firstViolationMs": null,
+      "nodeRssKb": 208972,
+      "adapterRssKb": null,
+      "deterministic": true
+     }
+    },
+    {
+     "target": "target.mjs#deep",
+     "strategy": "bfs",
+     "maxSteps": 2000000,
+     "maxStates": 5000000,
+     "maxSeconds": 600,
+     "runs": [
+      {
+       "exitCode": 0,
+       "wallMs": 39656,
+       "nodeRssKb": 643700,
+       "exploreMs": 39544,
+       "states": 638404,
+       "steps": 2000000,
+       "depth": 41,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [],
+       "firstViolation": null
+      },
+      {
+       "exitCode": 0,
+       "wallMs": 48465,
+       "nodeRssKb": 717100,
+       "exploreMs": 48356,
+       "states": 638404,
+       "steps": 2000000,
+       "depth": 41,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [],
+       "firstViolation": null
+      },
+      {
+       "exitCode": 0,
+       "wallMs": 81611,
+       "nodeRssKb": 827160,
+       "exploreMs": 81465,
+       "states": 638404,
+       "steps": 2000000,
+       "depth": 41,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [],
+       "firstViolation": null
+      }
+     ],
+     "median": {
+      "wallMs": 48465,
+      "exploreMs": 48356,
+      "firstViolationMs": null,
+      "nodeRssKb": 717100,
+      "adapterRssKb": null,
+      "deterministic": true
+     }
+    },
+    {
+     "target": "target.mjs#deep",
+     "strategy": "go-explore",
+     "maxSteps": 200000,
+     "seed": 1,
+     "runs": [
+      {
+       "exitCode": 1,
+       "wallMs": 4471,
+       "nodeRssKb": 83820,
+       "exploreMs": 4338,
+       "states": 10108,
+       "steps": 200000,
+       "depth": 129,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [
+        "no-softlock"
+       ],
+       "firstViolation": {
+        "id": "no-softlock",
+        "ms": 2064,
+        "steps": 58019,
+        "witness": 47,
+        "minimal": "1-minimal"
+       }
+      },
+      {
+       "exitCode": 1,
+       "wallMs": 3167,
+       "nodeRssKb": 84176,
+       "exploreMs": 3065,
+       "states": 10108,
+       "steps": 200000,
+       "depth": 129,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [
+        "no-softlock"
+       ],
+       "firstViolation": {
+        "id": "no-softlock",
+        "ms": 1017,
+        "steps": 58019,
+        "witness": 47,
+        "minimal": "1-minimal"
+       }
+      },
+      {
+       "exitCode": 1,
+       "wallMs": 3693,
+       "nodeRssKb": 83856,
+       "exploreMs": 3577,
+       "states": 10108,
+       "steps": 200000,
+       "depth": 129,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [
+        "no-softlock"
+       ],
+       "firstViolation": {
+        "id": "no-softlock",
+        "ms": 1026,
+        "steps": 58019,
+        "witness": 47,
+        "minimal": "1-minimal"
+       }
+      }
+     ],
+     "median": {
+      "wallMs": 3693,
+      "exploreMs": 3577,
+      "firstViolationMs": 1026,
+      "nodeRssKb": 83856,
+      "adapterRssKb": null,
+      "deterministic": true
+     }
+    },
+    {
+     "target": "target.mjs#deep",
+     "strategy": "go-explore",
+     "maxSteps": 200000,
+     "seed": 2,
+     "runs": [
+      {
+       "exitCode": 1,
+       "wallMs": 5744,
+       "nodeRssKb": 83584,
+       "exploreMs": 5431,
+       "states": 10726,
+       "steps": 200000,
+       "depth": 111,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [
+        "no-softlock"
+       ],
+       "firstViolation": {
+        "id": "no-softlock",
+        "ms": 1432,
+        "steps": 58447,
+        "witness": 45,
+        "minimal": "1-minimal"
+       }
+      },
+      {
+       "exitCode": 1,
+       "wallMs": 4115,
+       "nodeRssKb": 84016,
+       "exploreMs": 3959,
+       "states": 10726,
+       "steps": 200000,
+       "depth": 111,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [
+        "no-softlock"
+       ],
+       "firstViolation": {
+        "id": "no-softlock",
+        "ms": 1244,
+        "steps": 58447,
+        "witness": 45,
+        "minimal": "1-minimal"
+       }
+      },
+      {
+       "exitCode": 1,
+       "wallMs": 4040,
+       "nodeRssKb": 83676,
+       "exploreMs": 3870,
+       "states": 10726,
+       "steps": 200000,
+       "depth": 111,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [
+        "no-softlock"
+       ],
+       "firstViolation": {
+        "id": "no-softlock",
+        "ms": 1101,
+        "steps": 58447,
+        "witness": 45,
+        "minimal": "1-minimal"
+       }
+      }
+     ],
+     "median": {
+      "wallMs": 4115,
+      "exploreMs": 3959,
+      "firstViolationMs": 1244,
+      "nodeRssKb": 83676,
+      "adapterRssKb": null,
+      "deterministic": true
+     }
+    },
+    {
+     "target": "target.mjs#deep",
+     "strategy": "go-explore",
+     "maxSteps": 200000,
+     "seed": 3,
+     "runs": [
+      {
+       "exitCode": 1,
+       "wallMs": 4100,
+       "nodeRssKb": 83732,
+       "exploreMs": 3959,
+       "states": 12074,
+       "steps": 200000,
+       "depth": 108,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [
+        "no-softlock"
+       ],
+       "firstViolation": {
+        "id": "no-softlock",
+        "ms": 1912,
+        "steps": 86329,
+        "witness": 45,
+        "minimal": "1-minimal"
+       }
+      },
+      {
+       "exitCode": 1,
+       "wallMs": 4550,
+       "nodeRssKb": 83856,
+       "exploreMs": 4414,
+       "states": 12074,
+       "steps": 200000,
+       "depth": 108,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [
+        "no-softlock"
+       ],
+       "firstViolation": {
+        "id": "no-softlock",
+        "ms": 2457,
+        "steps": 86329,
+        "witness": 45,
+        "minimal": "1-minimal"
+       }
+      },
+      {
+       "exitCode": 1,
+       "wallMs": 4255,
+       "nodeRssKb": 84104,
+       "exploreMs": 4122,
+       "states": 12074,
+       "steps": 200000,
+       "depth": 108,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [
+        "no-softlock"
+       ],
+       "firstViolation": {
+        "id": "no-softlock",
+        "ms": 1934,
+        "steps": 86329,
+        "witness": 45,
+        "minimal": "1-minimal"
+       }
+      }
+     ],
+     "median": {
+      "wallMs": 4255,
+      "exploreMs": 4122,
+      "firstViolationMs": 1934,
+      "nodeRssKb": 83856,
+      "adapterRssKb": null,
+      "deterministic": true
+     }
+    },
+    {
+     "target": "target.mjs#deep",
+     "strategy": "go-explore",
+     "maxSteps": 200000,
+     "seed": 4,
+     "runs": [
+      {
+       "exitCode": 1,
+       "wallMs": 3827,
+       "nodeRssKb": 84736,
+       "exploreMs": 3705,
+       "states": 12794,
+       "steps": 200000,
+       "depth": 117,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [
+        "no-softlock"
+       ],
+       "firstViolation": {
+        "id": "no-softlock",
+        "ms": 1060,
+        "steps": 53125,
+        "witness": 47,
+        "minimal": "1-minimal"
+       }
+      },
+      {
+       "exitCode": 1,
+       "wallMs": 5568,
+       "nodeRssKb": 86548,
+       "exploreMs": 5385,
+       "states": 12794,
+       "steps": 200000,
+       "depth": 117,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [
+        "no-softlock"
+       ],
+       "firstViolation": {
+        "id": "no-softlock",
+        "ms": 1187,
+        "steps": 53125,
+        "witness": 47,
+        "minimal": "1-minimal"
+       }
+      },
+      {
+       "exitCode": 1,
+       "wallMs": 7761,
+       "nodeRssKb": 88356,
+       "exploreMs": 7556,
+       "states": 12794,
+       "steps": 200000,
+       "depth": 117,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [
+        "no-softlock"
+       ],
+       "firstViolation": {
+        "id": "no-softlock",
+        "ms": 3231,
+        "steps": 53125,
+        "witness": 47,
+        "minimal": "1-minimal"
+       }
+      }
+     ],
+     "median": {
+      "wallMs": 5568,
+      "exploreMs": 5385,
+      "firstViolationMs": 1187,
+      "nodeRssKb": 86548,
+      "adapterRssKb": null,
+      "deterministic": true
+     }
+    },
+    {
+     "target": "target.mjs#deep",
+     "strategy": "go-explore",
+     "maxSteps": 200000,
+     "seed": 5,
+     "runs": [
+      {
+       "exitCode": 1,
+       "wallMs": 7286,
+       "nodeRssKb": 83720,
+       "exploreMs": 7053,
+       "states": 9248,
+       "steps": 200000,
+       "depth": 129,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [
+        "no-softlock"
+       ],
+       "firstViolation": {
+        "id": "no-softlock",
+        "ms": 1464,
+        "steps": 30994,
+        "witness": 43,
+        "minimal": "1-minimal"
+       }
+      },
+      {
+       "exitCode": 1,
+       "wallMs": 11738,
+       "nodeRssKb": 82664,
+       "exploreMs": 11485,
+       "states": 9248,
+       "steps": 200000,
+       "depth": 129,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [
+        "no-softlock"
+       ],
+       "firstViolation": {
+        "id": "no-softlock",
+        "ms": 953,
+        "steps": 30994,
+        "witness": 43,
+        "minimal": "1-minimal"
+       }
+      },
+      {
+       "exitCode": 1,
+       "wallMs": 5981,
+       "nodeRssKb": 83436,
+       "exploreMs": 5817,
+       "states": 9248,
+       "steps": 200000,
+       "depth": 129,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [
+        "no-softlock"
+       ],
+       "firstViolation": {
+        "id": "no-softlock",
+        "ms": 1171,
+        "steps": 30994,
+        "witness": 43,
+        "minimal": "1-minimal"
+       }
+      }
+     ],
+     "median": {
+      "wallMs": 7286,
+      "exploreMs": 7053,
+      "firstViolationMs": 1171,
+      "nodeRssKb": 83436,
+      "adapterRssKb": null,
+      "deterministic": true
+     }
+    },
+    {
+     "target": "target.mjs#deepFixed",
+     "strategy": "go-explore",
+     "maxSteps": 200000,
+     "seed": 1,
+     "runs": [
+      {
+       "exitCode": 0,
+       "wallMs": 3606,
+       "nodeRssKb": 82316,
+       "exploreMs": 3562,
+       "states": 10113,
+       "steps": 200000,
+       "depth": 129,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [],
+       "firstViolation": null
+      },
+      {
+       "exitCode": 0,
+       "wallMs": 4690,
+       "nodeRssKb": 83640,
+       "exploreMs": 4610,
+       "states": 10113,
+       "steps": 200000,
+       "depth": 129,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [],
+       "firstViolation": null
+      },
+      {
+       "exitCode": 0,
+       "wallMs": 10572,
+       "nodeRssKb": 83288,
+       "exploreMs": 10460,
+       "states": 10113,
+       "steps": 200000,
+       "depth": 129,
+       "stoppedBy": "steps",
+       "exhaustive": false,
+       "violations": [],
+       "firstViolation": null
+      }
+     ],
+     "median": {
+      "wallMs": 4690,
+      "exploreMs": 4610,
+      "firstViolationMs": null,
+      "nodeRssKb": 83288,
+      "adapterRssKb": null,
+      "deterministic": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "todo-reducer",
+   "variants": [
+    {
+     "target": "target.mjs",
+     "strategy": "bfs",
+     "runs": [
+      {
+       "exitCode": 1,
+       "wallMs": 2502,
+       "nodeRssKb": 154448,
+       "exploreMs": 2396,
+       "states": 27049,
+       "steps": 189625,
+       "depth": 21,
+       "stoppedBy": "exhausted",
+       "exhaustive": true,
+       "violations": [
+        "selection-exists"
+       ],
+       "firstViolation": {
+        "id": "selection-exists",
+        "ms": 44,
+        "steps": 836,
+        "witness": 5,
+        "minimal": "shortest"
+       }
+      },
+      {
+       "exitCode": 1,
+       "wallMs": 1811,
+       "nodeRssKb": 154196,
+       "exploreMs": 1728,
+       "states": 27049,
+       "steps": 189625,
+       "depth": 21,
+       "stoppedBy": "exhausted",
+       "exhaustive": true,
+       "violations": [
+        "selection-exists"
+       ],
+       "firstViolation": {
+        "id": "selection-exists",
+        "ms": 22,
+        "steps": 836,
+        "witness": 5,
+        "minimal": "shortest"
+       }
+      },
+      {
+       "exitCode": 1,
+       "wallMs": 2603,
+       "nodeRssKb": 152612,
+       "exploreMs": 2499,
+       "states": 27049,
+       "steps": 189625,
+       "depth": 21,
+       "stoppedBy": "exhausted",
+       "exhaustive": true,
+       "violations": [
+        "selection-exists"
+       ],
+       "firstViolation": {
+        "id": "selection-exists",
+        "ms": 61,
+        "steps": 836,
+        "witness": 5,
+        "minimal": "shortest"
+       }
+      }
+     ],
+     "median": {
+      "wallMs": 2502,
+      "exploreMs": 2396,
+      "firstViolationMs": 44,
+      "nodeRssKb": 154196,
+      "adapterRssKb": null,
+      "deterministic": true
+     }
+    }
+   ]
+  }
+ ]
+}

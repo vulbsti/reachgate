@@ -35,6 +35,7 @@ Options:
   --rollout N                 go-explore steps per return to a cell, at most (default ${DEFAULTS.rollout})
   --no-action-labels          leave "action:<label>" out of the reachable-behaviour signature
   --expand-violations         keep exploring past states that violate an invariant
+  --require-exhaustive        exit 3 if the search stopped on a budget instead of exhausting the space
   --cmd "<command>"           run the target through the JSON-over-stdio adapter
   --config FILE               config file (default reachgate.config.json)
   --baseline FILE             baseline file (default reachgate.baseline.json)
@@ -48,7 +49,7 @@ Exit codes: 0 pass · 1 fail (violation found, or check found a regression) · 2
 
 const NUM = { 'max-steps': 'maxSteps', 'max-states': 'maxStates', 'max-seconds': 'maxSeconds', 'max-depth': 'maxDepth', seed: 'seed', rollout: 'rollout' };
 const STR = new Set(['strategy', 'cmd', 'config', 'baseline', 'out', 'fail-on', 'lang']);
-const BOOL = new Set(['json', 'quiet', 'no-action-labels', 'expand-violations', 'force', 'help', 'version']);
+const BOOL = new Set(['json', 'quiet', 'no-action-labels', 'expand-violations', 'require-exhaustive', 'force', 'help', 'version']);
 
 class UsageError extends Error {}
 
@@ -127,6 +128,11 @@ export async function main(argv = process.argv.slice(2), io = { out: (s) => proc
     } else opts = exploreOptions(config, flags);
     const result = await explore(driver, { ...opts, onProgress: progress });
     endProgress();
+    // A pass on a partial search is only a pass on what was searched. Where the space is meant to be
+    // finite, --require-exhaustive turns "stopped on a budget" into "could not measure" (exit 3).
+    const requireExhaustive = flags['require-exhaustive'] || config.requireExhaustive === true;
+    const incomplete = requireExhaustive && !result.stats.exhaustive;
+    if (incomplete) result.warnings.push(`--require-exhaustive: the search stopped on the ${result.stats.stoppedBy} budget after ${result.stats.states} states, so not every reachable state was checked. Bound the scenario or raise the budget.`);
     mkdirSync(join(outDir, 'witnesses'), { recursive: true });
     const witnessFiles = {};
     for (const v of result.violations) {
@@ -134,7 +140,7 @@ export async function main(argv = process.argv.slice(2), io = { out: (s) => proc
       writeFileSync(f, witnessJson(witnessOf(result, v, driver)));
       witnessFiles[v.id] = rel(f);
     }
-    const report = { reachgate: 1, tool: VERSION, ...result, violations: result.violations.map((v) => ({ ...v, witnessFile: witnessFiles[v.id] ?? null })), exitCode: exitCodeOf(result) };
+    const report = { reachgate: 1, tool: VERSION, ...result, violations: result.violations.map((v) => ({ ...v, witnessFile: witnessFiles[v.id] ?? null })), exitCode: incomplete && exitCodeOf(result) === EXIT.PASS ? EXIT.ERROR : exitCodeOf(result) };
     writeFileSync(join(outDir, 'report.json'), JSON.stringify(report, null, 1) + '\n');
     writeFileSync(join(outDir, 'report.md'), exploreMarkdown(result, { witnessFiles, driver }));
 
@@ -156,7 +162,7 @@ export async function main(argv = process.argv.slice(2), io = { out: (s) => proc
         say(`baseline: ${rel(baselineFile)} (${Object.keys(result.labels).length} labels, ${result.invariants.length} invariants${result.violations.length ? `, ${result.violations.length} already violated: they won't fail the gate until fixed and broken again` : ''})`);
         for (const w of result.warnings) warn(`warning: ${w}`);
       }
-      return result.violations.some((v) => v.replayed === false) ? EXIT.ERROR : EXIT.PASS;
+      return result.violations.some((v) => v.replayed === false) || incomplete ? EXIT.ERROR : EXIT.PASS;
     }
     // check
     const failOn = (flags['fail-on'] ?? config.failOn ?? 'lost,violation').toString().split(',').map((s) => s.trim()).filter(Boolean);
@@ -172,7 +178,7 @@ export async function main(argv = process.argv.slice(2), io = { out: (s) => proc
     for (const x of diff.regressed) x.witnessFile = witnessFiles[x.id];
     const md = diffMarkdown(diff, { target: result.target, driver });
     const diffJson = { reachgate: 1, tool: VERSION, target: result.target, baseline: rel(baselineFile), ...diff, exitCode: diff.verdict === 'pass' ? EXIT.PASS : EXIT.FAIL };
-    if (result.violations.some((v) => v.replayed === false)) diffJson.exitCode = EXIT.ERROR;
+    if (result.violations.some((v) => v.replayed === false) || (incomplete && diffJson.exitCode === EXIT.PASS)) diffJson.exitCode = EXIT.ERROR;
     writeFileSync(join(outDir, 'diff.json'), JSON.stringify(diffJson, null, 1) + '\n');
     writeFileSync(join(outDir, 'diff.md'), md);
     if (flags.json) say(JSON.stringify(diffJson, null, 1));

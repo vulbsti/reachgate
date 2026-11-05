@@ -70,3 +70,17 @@ each one records why, so it can be revisited.
 - The session's output style asks for small code contributions from the human, but the owner said they
   will not answer questions during this build. Waiting would block the run, so all code is written by
   the agents and reviewed by the manager session instead.
+
+## D11. A budget-limited PASS stays exit 0 by default; `--require-exhaustive` makes it exit 3
+- A search that stops on its budget has measured what it searched, and the report says so
+  ("stopped by steps budget"). Treating every partial search as a failure would make Go-Explore and
+  large spaces unusable as a gate.
+- But where the scenario is meant to be finite, a partial search hides states. `--require-exhaustive`
+  (config `requireExhaustive`) turns it into exit 3, "could not measure", following the
+  unmeasured = FAIL rule (D7). Found while checking the dungeon example's `#deep` variant, where BFS
+  reports PASS after 200k steps without ever reaching the bug.
+
+## D12. Adapter shutdown waits for the process to exit
+- `close()` used to leave its 500 ms grace timer armed (+500 ms on every adapter run) and SIGTERM the
+  adapter right after its shutdown reply. It now clears the timer and kills only if the process hasn't
+  exited within the grace period. Found by the benchmark work.
