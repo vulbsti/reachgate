@@ -105,8 +105,8 @@ page says where each tool is stronger.
 | Item | Status | Evidence |
 | --- | --- | --- |
 | One-command install; OS stated | met | README "Install": `npm install -g reachgate` / `npm install -g github:vulbsti/reachgate`; "Supported: Node.js 20+ on Linux and macOS…". The `npm pack --dry-run` file list ships bin, src, templates, adapters, skills and index.d.ts. |
-| Fresh-user test in a clean container, transcript saved, passes unaided | met | [docs/verification/fresh-user.md](docs/verification/fresh-user.md). A subagent given only the README, in a clean `node:22` container with a throwaway user, cloned the repo (a local mirror stood in for the GitHub URL), installed it, ran the Quickstart, then **wired a new project of its own** (a turnstile controller with a planted off-by-one bug). `explore` found the bug with a 2-step witness; `replay`, fix, `baseline`, a behaviour-removing change (`check` exit 1, lost `banked-ride`), revert (`check` exit 0); the same in Python via `init --lang python`. Verdict **PASS**, no outside help. Its 8 friction points were fixed in `c9c54d5` (DECISIONS D13). |
-| Few meaningful tests; CI (lint + tests) green | met | 23 tests (`npm test`). GitHub Actions on the private repo: run [42072356031](https://github.com/vulbsti/reachgate/actions/runs/42072356031) → `lint` success, `gate` success, `test (ubuntu-latest, 20)` success, `test (ubuntu-latest, 22)` success. macOS: see the CI section below. The same jobs also pass locally in clean containers: [docs/verification/ci-local.md](docs/verification/ci-local.md). |
+| Fresh-user test in a clean container, transcript saved, passes unaided | met | Two runs, each by a subagent given only the README, in a clean `node:22` container with a throwaway user, cloning a local mirror that stood in for the GitHub URL. **Run 1** ([fresh-user-run1.md](docs/verification/fresh-user-run1.md), commit `cb80b6f`): installed, ran the Quickstart, and wired a new turnstile project (JS, bug found with a 2-step witness; `check` exit 1 after removing behaviour, exit 0 after reverting), plus Python. **PASS**; its 8 friction points were fixed (D13). **Run 2** ([fresh-user.md](docs/verification/fresh-user.md), commit `669b6a1`, after those fixes): the Quickstart output matched the README exactly; it wired a new parking-garage gate (JS, 3-step witness, `check` exit 1 and then 0) and a library-loan system (Python, 4-step witness). **PASS**; its 7 points were fixed in `78cc7d6` (D14), the main one being that the INCOMPLETE verdict now matches exit 3. |
+| Few meaningful tests; CI (lint + tests) green | met | 23 tests (`npm test`). GitHub Actions on the private repo: run [42074948329](https://github.com/vulbsti/reachgate/actions/runs/42074948329): all 6 jobs green, including macOS (CI section below). The same jobs also pass locally in clean containers: [docs/verification/ci-local.md](docs/verification/ci-local.md). |
 | Tag `v0.1.0`, CHANGELOG | met | `git tag` → `v0.1.0`; [CHANGELOG.md](CHANGELOG.md) |
 
 ### D. Maintainable
@@ -139,7 +139,7 @@ page says where each tool is stronger.
 | Same seed, same exploration | *Go-Explore: same seed, same result…* |
 | Benchmark table numbers | docs/benchmarks.md (generated; medians) |
 | Zero runtime dependencies | `package.json` has no `dependencies` field |
-| Supported platforms | The README claims Linux, tested in CI. macOS is in the matrix but is explicitly called untested, because its GitHub runners never started on the private repo (see the CI section). |
+| Linux and macOS tested in CI | Matrix `[ubuntu-latest, macos-latest] × [20, 22]`, all green in run 42074948329 (CI section). |
 | Alternatives section | docs/alternatives.md, sourced |
 
 ### G. How to work
@@ -153,7 +153,8 @@ page says where each tool is stronger.
 
 ## CI on GitHub
 
-Run [42072356031](https://github.com/vulbsti/reachgate/actions/runs/42072356031) (commit `6a76fe8`):
+Run [42074948329](https://github.com/vulbsti/reachgate/actions/runs/42074948329) (commit `669b6a1`), the
+full workflow:
 
 | Job | Result |
 | --- | --- |
@@ -161,8 +162,12 @@ Run [42072356031](https://github.com/vulbsti/reachgate/actions/runs/42072356031)
 | gate | success |
 | test (ubuntu-latest, 20) | success |
 | test (ubuntu-latest, 22) | success |
-| test (macos-latest, 20) | MACOS20 |
-| test (macos-latest, 22) | MACOS22 |
+| test (macos-latest, 20) | success |
+| test (macos-latest, 22) | success |
+
+Later commits run the same workflow. The latest run for the tagged commit is cited under "Final audit".
+GitHub's macOS runners for this private repo sat queued for over an hour; superseded runs were cancelled
+to clear the queue.
 
 ## Final audit
 
