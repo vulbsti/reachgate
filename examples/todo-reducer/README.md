@@ -42,6 +42,7 @@ FAIL: 1 invariant violated · 27049 states, 189625 steps, 31 labels · state spa
   ✗ selection-exists: selectedId 1 is not in the list (ids: none)
     witness (5 steps, shortest): add → delete 1 → undo → select 1 → redo
     replay: reachgate replay examples/todo-reducer/target.mjs .reachgate/witnesses/selection-exists.json
+warning: 1584 state(s) that violate an invariant were not explored further, so the invariants reported as holding were only checked on the other states. Fix the violations, or rerun with --expand-violations to check past them.
 report: .reachgate/report.md
 ```
 

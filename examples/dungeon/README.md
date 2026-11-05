@@ -114,7 +114,7 @@ FAIL: 1 invariant violated · 10108 states, 200000 steps, 23 labels · stopped b
 
 BFS runs out of budget at depth 32 and never reaches the well room (no `room:well` label). The BFS
 "PASS" here only means nothing was found: the report says it stopped on the step budget, so states
-past that were never checked. In CI, `--require-exhaustive` turns a partial pass like this into exit code 3 ("could not measure"), so it can't be mistaken for a proof. Even a 10x budget (2,000,000 steps: 638,404 states, 37 s, 765 MB) only gets
+past that were never checked. In CI, `--require-exhaustive` turns a partial pass like this into exit code 3 ("could not measure"), so it can't be mistaken for a proof. Even a 10x budget (2,000,000 steps: 638,404 states, about 48 s and 700 MB in [the benchmark](../../docs/benchmarks.md)) only gets
 BFS to depth 41, and it still finds nothing.
 
 Go-Explore works because of `abstract`: the target groups states into coarse **cells**, given by the

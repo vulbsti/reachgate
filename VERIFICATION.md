@@ -2,7 +2,7 @@
 
 Each criterion (the project's own, then `OSS_STANDARD.md` A–G) is mapped to its evidence: a command and
 its output, or a file. Commands run from the repo root. Test names refer to `npm test`
-(`node --test test/*.test.mjs`): 21 tests, all passing (see [docs/verification/ci-local.md](docs/verification/ci-local.md)).
+(`node --test test/*.test.mjs`): 23 tests, all passing (see [docs/verification/ci-local.md](docs/verification/ci-local.md)).
 
 Status key: **met**, or **blocked** (needs the owner; see [BLOCKED.md](BLOCKED.md)).
 
@@ -106,7 +106,7 @@ page says where each tool is stronger.
 | --- | --- | --- |
 | One-command install; OS stated | met | README "Install": `npm install -g reachgate` / `npm install -g github:vulbsti/reachgate`; "Supported: Node.js 20+ on Linux and macOS…". The `npm pack --dry-run` file list ships bin, src, templates, adapters, skills and index.d.ts. |
 | Fresh-user test in a clean container, transcript saved, passes unaided | met | [docs/verification/fresh-user.md](docs/verification/fresh-user.md). A subagent given only the README, in a clean `node:22` container with a throwaway user, cloned the repo (a local mirror stood in for the GitHub URL), installed it, ran the Quickstart, then **wired a new project of its own** (a turnstile controller with a planted off-by-one bug). `explore` found the bug with a 2-step witness; `replay`, fix, `baseline`, a behaviour-removing change (`check` exit 1, lost `banked-ride`), revert (`check` exit 0); the same in Python via `init --lang python`. Verdict **PASS**, no outside help. Its 8 friction points were fixed in `c9c54d5` (DECISIONS D13). |
-| Few meaningful tests; CI (lint + tests) green | met | 21 tests (`npm test`). GitHub Actions on the private repo: run [42072356031](https://github.com/vulbsti/reachgate/actions/runs/42072356031) → `lint` success, `gate` success, `test (ubuntu-latest, 20)` success, `test (ubuntu-latest, 22)` success. macOS: see the CI section below. The same jobs also pass locally in clean containers: [docs/verification/ci-local.md](docs/verification/ci-local.md). |
+| Few meaningful tests; CI (lint + tests) green | met | 23 tests (`npm test`). GitHub Actions on the private repo: run [42072356031](https://github.com/vulbsti/reachgate/actions/runs/42072356031) → `lint` success, `gate` success, `test (ubuntu-latest, 20)` success, `test (ubuntu-latest, 22)` success. macOS: see the CI section below. The same jobs also pass locally in clean containers: [docs/verification/ci-local.md](docs/verification/ci-local.md). |
 | Tag `v0.1.0`, CHANGELOG | met | `git tag` → `v0.1.0`; [CHANGELOG.md](CHANGELOG.md) |
 
 ### D. Maintainable
@@ -123,9 +123,9 @@ page says where each tool is stronger.
 | --- | --- | --- |
 | Hero image | met | `assets/hero.jpg` (149 KB, gpt image via codex; prompts in `assets/src/hero-prompt.md`) |
 | Architecture diagram, SVG, light and dark | met | `assets/architecture-{light,dark}.svg` via `<picture>`; checked in `assets/src/preview-{light,dark}.png` |
-| Demo GIF of the real tool | met | `assets/demo.gif` (312 KB, VHS in Docker running the real CLI; `assets/src/demo/{Dockerfile,demo.tape}`) |
+| Demo GIF of the real tool | met | `assets/demo.gif` (338 KB, VHS in Docker running the real CLI; `assets/src/demo/{Dockerfile,demo.tape}`) |
 | Explainer visual | met | `assets/explore-coverage-{light,dark}.svg`, drawn from real BFS and Go-Explore runs by `assets/src/explainer/coverage.mjs` |
-| Sources in `assets/src/`; each image < 2 MB; README media < 10 MB | met | README media total 584 KB (`du -ch assets/hero.jpg assets/demo.gif assets/*.svg`) |
+| Sources in `assets/src/`; each image < 2 MB; README media < 10 MB | met | README media total 608 KB (`du -ch assets/hero.jpg assets/demo.gif assets/*.svg`) |
 | Every asset checked in light and dark | met | Hero and diagrams: `assets/src/preview-*.png`. Explainer and GIF frames were checked by the manager session (screenshots, not committed). |
 
 ### F. Honesty
@@ -147,7 +147,7 @@ page says where each tool is stronger.
 | Item | Status | Evidence |
 | --- | --- | --- |
 | Manager delegated and verified | met | Subagents built the examples, hygiene, visuals and alternatives research. The manager re-ran every example command, found and fixed core bugs during review (un-awaited `return` in try/finally, EPIPE exit code, adapter shutdown timer, Node 22 `npm test`), and added `--require-exhaustive`. |
-| No questions to the owner; decisions recorded | met | [DECISIONS.md](DECISIONS.md) D1–D12 |
+| No questions to the owner; decisions recorded | met | [DECISIONS.md](DECISIONS.md) D1–D13 |
 | Owner-only items in BLOCKED.md | met | [BLOCKED.md](BLOCKED.md): B1 resolved; open, non-blocking: Dependabot PRs and going public. |
 | Final adversarial audit passes | met | See "Final audit" below. |
 

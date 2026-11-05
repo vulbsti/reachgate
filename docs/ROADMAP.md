@@ -28,6 +28,9 @@ with only the files named.
 
 ## Bigger items
 
+- **Batched adapter calls.** Each transition costs two JSON round trips (`step`, then `visit`). A
+  `expand` method that steps every offered action of a state and visits the results in one call would
+  cut adapter overhead several-fold (see the checkout-py rows in `docs/benchmarks.md`).
 - **Adapter restart policy.** The adapter is stateless, so a crashed adapter could be restarted and the
   request retried, instead of ending the run with exit code 3.
 - **Parallel BFS.** Shard the frontier across worker threads (in-process) or adapter processes, keyed

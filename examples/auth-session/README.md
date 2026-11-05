@@ -50,6 +50,7 @@ FAIL: 1 invariant violated · 2688 states, 23247 steps, 36 labels · state space
   ✗ locked-has-no-new-session: the account is locked, yet login on laptop created a session
     witness (7 steps, shortest): login laptop hunter2 → verify laptop good-code +remember → logout laptop → login laptop correct-horse → login laptop correct-horse → login laptop correct-horse → login laptop hunter2
     replay: reachgate replay examples/auth-session/target.mjs .reachgate/witnesses/locked-has-no-new-session.json
+warning: 231 state(s) that violate an invariant were not explored further, so the invariants reported as holding were only checked on the other states. Fix the violations, or rerun with --expand-violations to check past them.
 report: .reachgate/report.md
 ```
 

@@ -39,6 +39,12 @@ export function refund(m) {
 ```
 $ reachgate init
 wrote reachgate.target.mjs, reachgate.config.json
+next:
+  1. edit reachgate.target.mjs: point initial/affordances/step at your code, add invariants
+  2. reachgate inspect        check the wiring
+  3. reachgate explore        find violations
+  4. reachgate baseline       record behaviour (commit reachgate.baseline.json; add .reachgate/ to .gitignore)
+  5. reachgate check          after every change: the gate
 ```
 
 `reachgate.target.mjs` contains a toy target (a door with a lock) that shows each hook. It has a deliberate
@@ -219,6 +225,12 @@ same way as locally, then:
 ```
 $ reachgate init --lang python
 wrote reachgate_target.py, reachgate_adapter.py, reachgate.config.json
+next:
+  1. edit reachgate_target.py: point initial/affordances/step at your code, add invariants
+  2. reachgate inspect        check the wiring
+  3. reachgate explore        find violations
+  4. reachgate baseline       record behaviour (commit reachgate.baseline.json; add .reachgate/ to .gitignore)
+  5. reachgate check          after every change: the gate
 ```
 
 `reachgate_adapter.py` is a zero-dependency helper. Your target calls `serve(initial=..., affordances=...,

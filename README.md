@@ -158,7 +158,7 @@ Medians of 3 runs of the real CLI on a 16-core laptop (AMD Ryzen AI 7 PRO 350, N
 | checkout-py (BFS, Python adapter) | 4,290 (exhaustive) | 176 ms | 0.78 s | 83 MB Node + 13 MB Python |
 
 State counts are exact and deterministic. Times and memory depend on the machine. The weak spot:
-the Python adapter costs two JSON round trips per transition. Batching is on the [roadmap](docs/ROADMAP.md).
+the Python adapter costs two JSON round trips per transition. Batching them is on the [roadmap](docs/ROADMAP.md).
 
 ## For coding agents
 
@@ -197,8 +197,8 @@ See the [CLI reference](docs/cli.md).
 
 ## Other languages
 
-Targets in any language run as a child process speaking [JSON Lines over stdio](docs/protocol.md): four
-methods (`hello`, `initial`, `visit`, `step`). The adapter is stateless: reachgate sends the full state
+Targets in any language run as a child process speaking [JSON Lines over stdio](docs/protocol.md): five
+methods (`hello`, `initial`, `visit`, `step`, `shutdown`). The adapter is stateless: reachgate sends the full state
 each time, so Go-Explore can restore any state with no snapshot API in your language. For Python,
 `reachgate init --lang python` drops in a zero-dependency helper:
 

@@ -100,6 +100,25 @@ test('baseline gate: a label the search misses is not "lost" if its baseline wit
   assert.equal(r2.diff.verdict, 'fail');
 });
 
+test('baseline gate: newly reachable labels are reported, and fail only with failOn new', async () => {
+  const base = await recordBaseline(line({ invariants: {} }));
+  const wider = line({ invariants: {}, affordances: (s) => [...(s.x < 40 ? ['+1'] : []), ...(s.x < 39 ? ['+2'] : []), ...(s.x > 0 ? ['-1'] : [])] });
+  const { diff } = await checkBaseline(wider, base);
+  assert.ok(diff.added.some((x) => x.label === 'ten:40' && x.witness.length === 20));
+  assert.equal(diff.verdict, 'pass');
+  assert.equal((await checkBaseline(wider, base, { failOn: ['new'] })).diff.verdict, 'fail');
+});
+
+test('state and time budgets stop the search and say so', async () => {
+  const byStates = await run(line(), { maxStates: 5 });
+  assert.equal(byStates.stats.states, 5);
+  assert.equal(byStates.stats.stoppedBy, 'states');
+  assert.equal(byStates.stats.exhaustive, false);
+  const byTime = await run(line(), { maxSeconds: 0 });
+  assert.equal(byTime.stats.stoppedBy, 'time');
+  assert.match(byTime.warnings.join('\n'), /not reproducible/);
+});
+
 test('crashes in step() are findings with a witness, not tool errors', async () => {
   const t = line({ invariants: {}, step: (s, a) => { if (s.x === 4 && a === '+2') throw new Error('boom'); return { x: s.x + Number(a) }; } });
   const r = await run(t, { strategy: 'bfs' });

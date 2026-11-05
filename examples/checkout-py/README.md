@@ -55,6 +55,7 @@ FAIL: 2 invariants violated · 4290 states, 5751 steps, 37 labels · state space
   ✗ single-capture: 2 authorizations captured for one order
     witness (6 steps, shortest): add_item mug → set_address domestic → pay timeout → retry_payment approve → reconcile → capture
     replay: reachgate replay examples/checkout-py/target.py .reachgate/witnesses/single-capture.json
+warning: 192 state(s) that violate an invariant were not explored further, so the invariants reported as holding were only checked on the other states. Fix the violations, or rerun with --expand-violations to check past them.
 report: .reachgate/report.md
 ```
 
