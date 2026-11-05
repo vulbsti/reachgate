@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>reachgate README preview</title>
+<!--
+  Mimics a GitHub README column (max 880px of content) to check the assets in context.
+  The diagram uses the exact <picture> markup the README will use, so it follows the
+  browser's colour scheme. Screenshot in both schemes:
+    PW=.../node_modules/playwright node assets/src/shot.mjs file://$PWD/assets/src/preview.html assets/src/preview-light.png 1040 900 light
+    PW=.../node_modules/playwright node assets/src/shot.mjs file://$PWD/assets/src/preview.html assets/src/preview-dark.png  1040 900 dark
+-->
+<style>
+  :root { color-scheme: light dark; --bg: #ffffff; --fg: #1f2328; --muted: #59636e; --border: #d1d9e0; --code: #eff1f3; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0d1117; --fg: #f0f6fc; --muted: #9198a1; --border: #3d444d; --code: #262c36; }
+  }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; }
+  .box { max-width: 880px; margin: 24px auto; padding: 32px 48px; border: 1px solid var(--border); border-radius: 6px; box-sizing: content-box; }
+  h1 { font-size: 2em; font-weight: 600; margin: 0 0 16px; padding-bottom: .3em; border-bottom: 1px solid var(--border); }
+  h2 { font-size: 1.5em; font-weight: 600; margin: 24px 0 16px; padding-bottom: .3em; border-bottom: 1px solid var(--border); }
+  p { margin: 0 0 16px; }
+  img { max-width: 100%; height: auto; display: block; }
+  code { font: 85% ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code); padding: .2em .4em; border-radius: 6px; }
+</style>
+</head>
+<body>
+<article class="box">
+  <p><img src="../hero.jpg" width="1600" height="640" alt="A hand-drawn state machine on graph paper, with one path traced in red pencil to a circled state"></p>
+  <h1>reachgate</h1>
+  <p>Explore every reachable state of your real code, check invariants in each one, and get the shortest
+  replayable trace to every violation. Then gate changes against a behaviour baseline: <code>reachgate check</code>
+  explains what became reachable or unreachable before you call a change done.</p>
+  <h2>How it works</h2>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="../architecture-dark.svg">
+    <img alt="reachgate architecture: your code, the driver and explorer, outputs, and the baseline gate" src="../architecture-light.svg">
+  </picture>
+  <p style="margin-top:16px">Witnesses are plain JSON: replay one with <code>reachgate replay</code>.</p>
+</article>
+</body>
+</html>

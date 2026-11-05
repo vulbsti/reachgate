@@ -110,7 +110,7 @@ export async function main(argv = process.argv.slice(2), io = { out: (s) => proc
     if (flags.cmd) spec.cmd = flags.cmd;
     const outDir = resolve(io.cwd, flags.out ?? config.out ?? '.reachgate');
     const baselineFile = resolve(io.cwd, flags.baseline ?? (config.baseline ? resolve(dir, config.baseline) : 'reachgate.baseline.json'));
-    const rel = (p) => relative(io.cwd, p) || '.';
+    const rel = (p) => { const r = relative(io.cwd, p) || '.'; return r.startsWith('..') ? p : r; };
     const progress = flags.quiet || flags.json || !process.stderr.isTTY ? undefined : (s) => io.err(`\r  ${Math.round(s.ms / 1000)}s: ${s.states} states, ${s.steps} steps, ${s.violations} violations, ${s.labels} labels   `);
     const endProgress = () => progress && io.err('\r' + ' '.repeat(78) + '\r');
 

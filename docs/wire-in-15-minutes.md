@@ -92,6 +92,7 @@ What each hook is for:
 | `label(a)` | How an action prints in witnesses. |
 | `isTerminal(s)` | Optional. Defining it turns on deadlock detection. |
 | `hash(s)` / `abstract(s)` | Optional. Exact identity, and a coarse cell for `--strategy go-explore`. |
+| `clone(s)` | Optional. Defaults to `structuredClone`. If your `step` never mutates its input (an immutable reducer), use `clone: (s) => s`. In the todo-reducer example that halves the run time. |
 
 Two things to get right:
 

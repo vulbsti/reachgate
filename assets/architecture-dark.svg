@@ -1,0 +1,246 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 920" width="1200" height="920" role="img" aria-labelledby="title desc">
+  <title id="title">How reachgate works</title>
+  <desc id="desc">Your code is described as a target (initial, affordances, step, invariants, observe) and reached in-process or through a JSON Lines stdio adapter. A driver feeds the explorer (BFS or Go-Explore, within step, state, time and depth budgets), which writes report.json, report.md, replayable witnesses and an exit code. Below, the baseline gate: reachgate baseline records every reachable label with a witness; reachgate check explores again, replays old witnesses for labels it missed, and writes a diff that fails CI with exit 1.</desc>
+
+  <!-- THEME: the only block that differs between architecture-light.svg and architecture-dark.svg -->
+  <style>
+    .bg     { fill: #0d1117; }
+    .box    { fill: #161b22; stroke: #8b949e; }
+    .sub    { fill: #0d1117; stroke: #6e7681; }
+    .lane   { fill: none; stroke: #6e7681; }
+    .line   { fill: none; stroke: #8b949e; }
+    .dash   { fill: none; stroke: #6e7681; }
+    .edge   { fill: none; stroke: #6e7681; }
+    .node   { fill: #0d1117; stroke: #8b949e; }
+    .accent { fill: none; stroke: #ff7b72; }
+    .head   { fill: #8b949e; }
+    .head-a { fill: #ff7b72; }
+    text, .ink        { fill: #e6edf3; }
+    .muted, .muted text { fill: #9198a1; }
+    .red              { fill: #ff7b72; }
+  </style>
+
+  <!-- SHARED: geometry, fonts, arrowheads (identical in both files) -->
+  <style>
+    .box, .sub, .lane, .line, .dash, .edge, .node, .accent { stroke-width: 1.5; }
+    .lane, .dash { stroke-dasharray: 5 5; }
+    .accent.thick { stroke-width: 2.25; }
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; font-size: 14px; }
+    .mono, .mono text { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .sm, .sm text { font-size: 13px; }
+    .h1 { font-size: 18px; font-weight: 600; }
+    .h2 { font-size: 15px; font-weight: 600; }
+    .tag { font-size: 13px; letter-spacing: 0.06em; font-weight: 600; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="head" d="M0,1 L10,5 L0,9 z"/>
+    </marker>
+    <marker id="arrow-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path class="head-a" d="M0,1 L10,5 L0,9 z"/>
+    </marker>
+  </defs>
+
+  <!-- ============================== 1 · EXPLORE ============================== -->
+  <text class="tag muted" x="24" y="30">1 · EXPLORE</text>
+
+  <!-- LEFT: your code, described as a target -->
+  <rect class="box" x="24" y="48" width="316" height="250" rx="10"/>
+  <text class="h1" x="44" y="80">your code</text>
+  <text class="sm muted" x="44" y="102">a target: a few plain functions</text>
+  <g class="mono">
+    <text x="44" y="136">initial()</text>
+    <text x="44" y="160">affordances(s)</text>
+    <text x="44" y="184">step(s, a)</text>
+    <text x="44" y="208">invariants</text>
+    <text x="44" y="232">observe(s)</text>
+    <text x="44" y="256" class="muted">hash(s)</text>
+    <text x="44" y="280" class="muted">abstract(s)</text>
+  </g>
+  <g class="sm muted">
+    <text x="192" y="136">start state</text>
+    <text x="192" y="160">what can happen</text>
+    <text x="192" y="184">calls your code</text>
+    <text x="192" y="208">true, or why not</text>
+    <text x="192" y="232">labels to keep</text>
+    <text x="192" y="256">optional identity</text>
+    <text x="192" y="280">optional cell</text>
+  </g>
+
+  <path class="line" d="M182,298 V320" marker-end="url(#arrow)"/>
+  <text class="sm muted" x="194" y="316">two ways in</text>
+
+  <!-- way in 1: an in-process JS module -->
+  <rect class="box" x="24" y="324" width="316" height="96" rx="10"/>
+  <text class="h2" x="44" y="352">in-process JS module</text>
+  <text class="mono" x="44" y="378">reachgate.target.mjs</text>
+  <text class="sm muted" x="44" y="402">imported and called directly</text>
+
+  <!-- way in 2: any language, through the JSON Lines stdio adapter -->
+  <rect class="box" x="24" y="440" width="316" height="168" rx="10"/>
+  <text class="h2" x="44" y="468">any language</text>
+  <text class="sm muted" x="44" y="490">JSON Lines over stdio; the adapter is</text>
+  <text class="sm muted" x="44" y="508">stateless, reachgate owns every state</text>
+  <text class="mono" x="44" y="540">hello · initial · visit · step</text>
+  <text class="sm muted" x="44" y="560">one request per line, full state in each</text>
+  <text class="mono sm muted" x="44" y="584">$ reachgate explore my_target.py</text>
+
+  <!-- both ways in converge on the driver -->
+  <path class="line" d="M340,372 C372,372 360,96 390,96" marker-end="url(#arrow)"/>
+  <path class="line" d="M340,524 C380,524 356,114 390,114" marker-end="url(#arrow)"/>
+
+  <!-- MIDDLE: the driver -->
+  <rect class="box" x="392" y="48" width="420" height="86" rx="10"/>
+  <text class="h1" x="412" y="80">driver</text>
+  <text class="sm muted" x="476" y="80">one interface for both</text>
+  <text class="mono" x="412" y="104">initial() · visit(s) · step(s, a)</text>
+  <text class="sm muted" x="412" y="124">visit → actions, violations, labels, hash, cell</text>
+
+  <path class="line" d="M602,136 V164" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+
+  <!-- MIDDLE: the explorer -->
+  <rect class="box" x="392" y="166" width="420" height="442" rx="10"/>
+  <text class="h1" x="412" y="198">explorer</text>
+  <text class="sm muted" x="412" y="220">checks every invariant in every state it reaches</text>
+
+  <rect class="sub" x="412" y="236" width="380" height="134" rx="8"/>
+  <text class="h2 mono" x="428" y="262">bfs</text>
+  <text class="sm muted" x="462" y="262">default</text>
+  <text x="428" y="288">dedupes states by exact hash</text>
+  <text x="428" y="310">first discovery is by a shortest path,</text>
+  <text x="428" y="332">so every witness is a shortest trace</text>
+  <text x="428" y="354">empty queue: <tspan class="mono sm">state space exhausted</tspan></text>
+
+  <rect class="sub" x="412" y="386" width="380" height="156" rx="8"/>
+  <text class="h2 mono" x="428" y="412">go-explore</text>
+  <text class="sm muted" x="526" y="412">reaches deeper in the same budget</text>
+  <text x="428" y="438">archive of cells keyed by <tspan class="mono">abstract(s)</tspan></text>
+  <text x="428" y="460">returns to a rarely visited cell by</text>
+  <text x="428" y="482">restoring its saved state, then runs</text>
+  <text x="428" y="504">a short seeded random rollout</text>
+  <text x="428" y="526">witnesses shrunk to 1-minimal</text>
+
+  <text x="412" y="570"><tspan class="h2">budgets</tspan><tspan dx="10">steps · states · time · depth</tspan></text>
+  <text class="sm muted" x="412" y="592">steps come first, so a seed explores the same way every run</text>
+
+  <!-- explorer → outputs (only the witness arrow carries the accent) -->
+  <path class="line" d="M812,200 C840,200 834,98 862,98" marker-end="url(#arrow)"/>
+  <path class="accent" d="M812,300 C838,300 838,262 862,262" marker-end="url(#arrow-a)"/>
+  <path class="line" d="M812,525 H862" marker-end="url(#arrow)"/>
+
+  <!-- RIGHT: report -->
+  <rect class="box" x="864" y="48" width="312" height="100" rx="10"/>
+  <text class="h2 mono" x="884" y="78">report.json · report.md</text>
+  <text class="sm muted" x="884" y="102">verdict line, stats, labels, and every</text>
+  <text class="sm muted" x="884" y="122">invariant: holds or violated</text>
+
+  <!-- RIGHT: witnesses -->
+  <rect class="box" x="864" y="172" width="312" height="252" rx="10"/>
+  <text class="h2 mono" x="884" y="202">witnesses/*.json</text>
+  <text class="sm muted" x="884" y="224">replayable action list from the start state</text>
+
+  <!-- a tiny state graph: grey edges were explored, red is the witness -->
+  <g>
+    <path class="edge" d="M918,284.7 L969.8,262"/>
+    <path class="edge" d="M986.9,256.5 L1041.1,247.5"/>
+    <path class="edge" d="M986.2,261.7 L1036.3,283.9"/>
+    <path class="edge" d="M986.6,318.6 L1041.4,335.4"/>
+    <path class="edge" d="M1058.5,248.8 L1101.5,263.2"/>
+    <path class="edge" d="M1063.9,284.4 L1101.6,269.3"/>
+    <path class="edge" d="M1058.5,335.2 L1101.5,320.8"/>
+    <path class="edge" d="M1112,327 C1104,362 1000,364 983,328" marker-end="url(#arrow)"/>
+    <!-- the witness: start → insert 100 → select chips -->
+    <path class="accent thick" d="M918.2,294.4 L966,311.7" marker-end="url(#arrow-a)"/>
+    <path class="accent thick" d="M987.4,312.6 L1033,296.2" marker-end="url(#arrow-a)"/>
+    <!-- states (double ring = start) -->
+    <circle class="node" cx="906" cy="290" r="12"/>
+    <circle class="node" cx="906" cy="290" r="8"/>
+    <circle class="node" cx="978" cy="258" r="9"/>
+    <circle class="node" cx="978" cy="316" r="9"/>
+    <circle class="node" cx="1050" cy="246" r="9"/>
+    <circle class="node" cx="1050" cy="290" r="9"/>
+    <circle class="node" cx="1050" cy="338" r="9"/>
+    <circle class="node" cx="1110" cy="266" r="9"/>
+    <circle class="node" cx="1110" cy="318" r="9"/>
+    <!-- the violating state, ringed in red -->
+    <circle class="accent thick" cx="1050" cy="290" r="15"/>
+    <text class="sm muted" x="890" y="322">start</text>
+  </g>
+
+  <text class="mono sm red" x="884" y="378">insert 100 → select chips</text>
+  <text class="mono sm red" x="884" y="398">✗ money-conserved</text>
+  <text class="mono sm" x="884" y="416">$ reachgate replay &lt;witness&gt;</text>
+
+  <!-- RIGHT: exit codes -->
+  <rect class="box" x="864" y="446" width="312" height="162" rx="10"/>
+  <text class="h2" x="884" y="474">exit codes</text>
+  <text class="mono" x="884" y="500">0</text><text x="908" y="500">pass</text>
+  <text class="mono" x="884" y="522">1</text><text x="908" y="522">violated, or the gate failed</text>
+  <text class="mono" x="884" y="544">2</text><text x="908" y="544">usage error</text>
+  <text class="mono" x="884" y="566">3</text><text x="908" y="566">could not measure, never a pass</text>
+  <text class="sm muted" x="908" y="588">adapter died, or a replay differed</text>
+
+  <!-- ============================ 2 · THE BASELINE GATE ============================ -->
+  <rect class="lane" x="8" y="636" width="1184" height="272" rx="14"/>
+  <text class="tag muted" x="24" y="666">2 · THE BASELINE GATE</text>
+  <text class="sm muted" x="212" y="666">run after every change, before calling it done</text>
+
+  <!-- check reuses the same explorer -->
+  <path class="dash" d="M624,608 V686" marker-end="url(#arrow)"/>
+  <text class="sm muted" x="634" y="682">same explorer</text>
+
+  <!-- L1: record -->
+  <rect class="box" x="20" y="690" width="188" height="150" rx="10"/>
+  <text class="h2 mono" x="36" y="718">reachgate baseline</text>
+  <text x="36" y="744">explores once and</text>
+  <text x="36" y="766">records what is</text>
+  <text x="36" y="788">reachable today</text>
+
+  <path class="line" d="M208,765 H230" marker-end="url(#arrow)"/>
+
+  <!-- L2: the baseline file -->
+  <rect class="box" x="232" y="690" width="236" height="150" rx="10"/>
+  <text class="h2 mono" x="248" y="718">reachgate.baseline.json</text>
+  <text x="248" y="744">every reachable label</text>
+  <text x="248" y="766">+ a witness for each label</text>
+  <text x="248" y="788">+ status of each invariant</text>
+  <text class="sm muted" x="248" y="822">committed with the code</text>
+
+  <!-- time passes: someone changes the code -->
+  <path class="line" d="M468,765 H532" marker-end="url(#arrow)"/>
+  <text class="sm muted" x="500" y="755" text-anchor="middle">change</text>
+
+  <!-- L3: check -->
+  <rect class="box" x="534" y="690" width="180" height="150" rx="10"/>
+  <text class="h2 mono" x="550" y="718">reachgate check</text>
+  <text x="550" y="744">explores again with</text>
+  <text x="550" y="766">the baseline's options</text>
+
+  <path class="line" d="M714,765 H736" marker-end="url(#arrow)"/>
+
+  <!-- L4: a label the new search missed gets its old witness replayed -->
+  <rect class="box" x="738" y="690" width="174" height="150" rx="10"/>
+  <text class="h2" x="754" y="718">label missed?</text>
+  <text x="754" y="744">replay its old witness;</text>
+  <text x="754" y="766">still reaches it: kept</text>
+  <text class="sm muted" x="754" y="800">search luck can't</text>
+  <text class="sm muted" x="754" y="818">fail the gate</text>
+
+  <!-- old witnesses flow from the baseline file into the replay -->
+  <path class="line" d="M350,840 V870 H825 V844" marker-end="url(#arrow)"/>
+  <rect class="bg" x="538" y="861" width="100" height="18"/>
+  <text class="sm muted" x="588" y="875" text-anchor="middle">old witnesses</text>
+
+  <path class="line" d="M912,765 H932" marker-end="url(#arrow)"/>
+
+  <!-- L5: the diff -->
+  <rect class="box" x="934" y="690" width="246" height="202" rx="10"/>
+  <text class="h2 mono" x="950" y="718">diff.md · diff.json</text>
+  <text class="red" x="950" y="744">✗ newly violated</text>
+  <text x="950" y="768">− no longer reachable</text>
+  <text class="sm muted" x="964" y="786">names the step where the</text>
+  <text class="sm muted" x="964" y="803">old witness diverged</text>
+  <text x="950" y="826">+ newly reachable</text>
+  <text class="sm muted" x="964" y="844">fails only with --fail-on new</text>
+  <text class="h2" x="950" y="876"><tspan class="mono">exit 1</tspan> fails CI</text>
+</svg>
