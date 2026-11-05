@@ -1,0 +1,11 @@
+{
+  "name": "reachgate",
+  "owner": { "name": "vulbsti" },
+  "plugins": [
+    {
+      "name": "reachgate",
+      "source": "./",
+      "description": "Behavioural baseline gate: explore reachable states, check invariants, shortest replayable witnesses, baseline diffs."
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+name: Feature request
+description: Suggest a new capability, strategy, adapter or CLI option.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do, and what gets in the way today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How would you like it to work? Example commands, config or output help.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Workarounds you use now, or other tools that do this.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Exploration strategies / budgets
+        - Witnesses / replay
+        - Baseline gate (baseline / check)
+        - Reports / exit codes
+        - Adapter protocol / language adapters
+        - CLI / config
+        - Agent skill
+        - Docs / examples
+        - Other
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I would be willing to open a pull request for this.

@@ -1,0 +1,10 @@
+{
+  "name": "reachgate",
+  "version": "0.1.0",
+  "description": "Behavioural baseline gate for coding agents: explore reachable states of your real code, check invariants, get shortest replayable witnesses, and diff reachable behaviour against a baseline.",
+  "author": { "name": "vulbsti" },
+  "homepage": "https://github.com/vulbsti/reachgate",
+  "repository": "https://github.com/vulbsti/reachgate",
+  "license": "Apache-2.0",
+  "keywords": ["verification", "invariants", "state-space", "regression", "baseline"]
+}

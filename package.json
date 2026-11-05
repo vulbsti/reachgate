@@ -1,0 +1,62 @@
+{
+  "name": "reachgate",
+  "version": "0.1.0",
+  "description": "Explore your real code's reachable states, check invariants, get shortest replayable witness traces, and gate changes against a recorded behavioural baseline. Built for coding agents.",
+  "type": "module",
+  "bin": {
+    "reachgate": "bin/reachgate.mjs"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./src/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "types": "./index.d.ts",
+  "files": [
+    "bin",
+    "src",
+    "templates",
+    "adapters",
+    "skills",
+    "index.d.ts",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/",
+    "lint": "eslint . && node scripts/check-python.mjs",
+    "bench": "node bench/run.mjs"
+  },
+  "keywords": [
+    "model-checking",
+    "state-space",
+    "invariants",
+    "go-explore",
+    "property-based-testing",
+    "regression",
+    "coding-agents",
+    "witness",
+    "bfs"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vulbsti/reachgate.git"
+  },
+  "homepage": "https://github.com/vulbsti/reachgate#readme",
+  "bugs": {
+    "url": "https://github.com/vulbsti/reachgate/issues"
+  },
+  "author": "vulbsti",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.14.0",
+    "globals": "^17.14.0"
+  }
+}

@@ -1,0 +1,9 @@
+# Ruff settings for the Python files reachgate ships (adapter helper, templates, examples).
+# Pinned explicitly so results do not change when ruff's default rule set changes.
+target-version = "py39"
+line-length = 120
+
+[lint]
+# pyflakes, pycodestyle errors, bugbear. Blind `except Exception` is intentional in the adapter:
+# it turns a crash in user code into a reported violation instead of killing the adapter.
+select = ["E4", "E7", "E9", "F", "B"]
