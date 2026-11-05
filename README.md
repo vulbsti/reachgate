@@ -43,6 +43,7 @@ FAIL: 1 invariant violated · 10772 states, 35881 steps, 18 labels · state spac
   ✗ no-softlock: the exit can no longer be reached: the key is stuck in the locked door at (8,4)
     witness (13 steps, shortest): down → right → right → right → right → right → right → up → right → down → down → up → wait
     replay: reachgate replay examples/dungeon/target.mjs .reachgate/witnesses/no-softlock.json
+warning: 16 state(s) that violate an invariant were not explored further, so the invariants reported as holding were only checked on the other states. Fix the violations, or rerun with --expand-violations to check past them.
 report: .reachgate/report.md
 ```
 
