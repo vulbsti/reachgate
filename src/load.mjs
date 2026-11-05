@@ -1,6 +1,7 @@
 // Resolving "what to explore" into a driver: a JS module path (optionally path#exportName), a .py
 // file (run through the stdio adapter), or an explicit adapter command.
 import { pathToFileURL } from 'node:url';
+import { spawnSync } from 'node:child_process';
 import { resolve, extname, dirname } from 'node:path';
 import { existsSync, readFileSync } from 'node:fs';
 import { inProcessDriver, TargetError } from './target.mjs';
@@ -37,7 +38,15 @@ export async function loadDriver({ target, cmd, cwd = process.cwd(), timeoutMs }
   try {
     mod = await import(pathToFileURL(path).href);
   } catch (e) {
-    throw new TargetError(`could not import ${path}: ${e.message}`, { cause: e, fatal: true });
+    // Node leaves the file out of a SyntaxError caught from import(). Parsing fails before any module
+    // runs, so re-importing in a child process has no side effects, and its uncaught error names the file.
+    let at = '';
+    if (e instanceof SyntaxError) {
+      const r = spawnSync(process.execPath, ['--input-type=module', '-e', `await import(${JSON.stringify(pathToFileURL(path).href)})`], { encoding: 'utf8', timeout: 10000 });
+      const loc = (r.stderr ?? '').split('\n')[0].trim();
+      if (/^(file:\/\/|\/|[A-Za-z]:\\)\S+:\d+$/.test(loc)) at = ` (at ${loc.replace(/^file:\/\//, '')})`;
+    }
+    throw new TargetError(`could not import ${path}: ${e.message}${at}`, { cause: e, fatal: true });
   }
   let t = exportName ? mod[exportName] : (mod.default ?? mod.target);
   if (!t) throw new TargetError(`${path} has no ${exportName ? `export "${exportName}"` : 'default export (or export named "target")'}`, { fatal: true, usage: true });

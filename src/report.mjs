@@ -39,11 +39,18 @@ export function actionsOf(witness) {
 const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 const esc = (s) => String(s).replace(/\|/g, '\\|').replace(/\n/g, ' ');
 
+/** How to name this target on a reachgate command line. */
+export function replayTarget(driver) {
+  if (!driver?.source) return '<target>';
+  return driver.kind === 'adapter' && !/\.py$/.test(driver.source) ? `--cmd ${JSON.stringify(driver.source)}` : driver.source.split(' ').pop();
+}
+
 export function summaryLine(result) {
   const s = result.stats;
   const bad = result.violations.length;
   const space = s.exhaustive ? 'state space exhausted' : `stopped by ${s.stoppedBy} budget`;
-  return `${bad ? 'FAIL' : 'PASS'}: ${plural(bad, 'invariant')} violated · ${plural(s.states, 'state')}, ${plural(s.steps, 'step')}, ${Object.keys(result.labels).length} labels · ${space} · ${s.ms} ms`;
+  const verdict = bad ? 'FAIL' : result.incomplete ? 'INCOMPLETE (exit 3: --require-exhaustive, the search stopped on a budget)' : 'PASS';
+  return `${verdict}: ${plural(bad, 'invariant')} violated · ${plural(s.states, 'state')}, ${plural(s.steps, 'step')}, ${Object.keys(result.labels).length} labels · ${space} · ${s.ms} ms`;
 }
 
 export function exploreMarkdown(result, { witnessFiles = {}, driver }) {
@@ -58,26 +65,26 @@ export function exploreMarkdown(result, { witnessFiles = {}, driver }) {
   for (const inv of result.invariants) {
     const v = result.violations.find((x) => x.id === inv.id);
     const name = inv.description ? `\`${inv.id}\`: ${esc(inv.description)}` : `\`${inv.id}\``;
-    L.push(`| ${name} | ${v ? `**no** (${v.count}×)` : s.unexpanded && result.violations.length ? 'yes, outside the violating states*' : 'yes'} | ${v ? `${v.length} steps${v.shortest ? ' (shortest)' : ` (${v.minimal})`}${witnessFiles[v.id] ? ` · \`${witnessFiles[v.id]}\`` : ''}` : ''} |`);
+    L.push(`| ${name} | ${v ? `**no** (${v.count}×)` : s.unexpanded && result.violations.length ? 'yes, outside the violating states*' : 'yes'} | ${v ? `${plural(v.length, 'step')}${v.shortest ? ' (shortest)' : ` (${v.minimal})`}${witnessFiles[v.id] ? ` · \`${witnessFiles[v.id]}\`` : ''}` : ''} |`);
   }
   if (s.unexpanded && result.violations.length) L.push('', `\\* ${s.unexpanded} state(s) that violate an invariant were not explored further (the default). Rerun with \`--expand-violations\` to check the other invariants past them.`);
   for (const v of result.violations) {
     L.push('', `## Violation: \`${v.id}\``, '');
     if (v.message) L.push(`> ${esc(v.message)}`, '');
-    L.push(`Witness: ${v.length} steps from \`initial()\`, ${v.shortest ? 'shortest possible (BFS)' : v.minimal === '1-minimal' ? `1-minimal (shrunk from ${v.shrunk?.from} steps; no single step can be removed)` : 'not minimised'}. ${v.replayed === false ? '**Did not replay deterministically.**' : 'Replayed twice to the same violation.'}`, '');
+    L.push(`Witness: ${plural(v.length, 'step')} from \`initial()\`, ${v.shortest ? 'shortest possible (BFS)' : v.minimal === '1-minimal' ? `1-minimal (shrunk from ${v.shrunk?.from} steps; no single step can be removed)` : 'not minimised'}. ${v.replayed === false ? '**Did not replay deterministically.**' : 'Replayed twice to the same violation.'}`, '');
     if (v.trace.length) {
       L.push('```');
       v.trace.forEach((a, i) => L.push(`${String(i + 1).padStart(3)}. ${driver.label(a)}`));
       L.push('```');
     } else L.push('The initial state already violates it.');
-    if (witnessFiles[v.id]) L.push('', `Replay: \`reachgate replay <target> ${witnessFiles[v.id]}\``);
+    if (witnessFiles[v.id]) L.push('', `Replay: \`reachgate replay ${replayTarget(driver)} ${witnessFiles[v.id]}\``);
   }
   const labels = Object.entries(result.labels);
   L.push('', `## Reachable labels (${labels.length})`, '');
   if (!labels.length) L.push('None. Add `observe(state)` to name the behaviour you want the baseline to track.');
   else {
     L.push('| Label | Shortest trace found |', '| --- | --- |');
-    for (const [l, t] of labels.slice(0, 200)) L.push(`| \`${esc(l)}\` | ${t.length} steps |`);
+    for (const [l, t] of labels.slice(0, 200)) L.push(`| \`${esc(l)}\` | ${plural(t.length, 'step')} |`);
     if (labels.length > 200) L.push(`| … and ${labels.length - 200} more (see report.json) | |`);
   }
   return L.join('\n') + '\n';
@@ -86,7 +93,7 @@ export function exploreMarkdown(result, { witnessFiles = {}, driver }) {
 export function diffMarkdown(diff, { target, driver }) {
   const L = [], lab = (a) => driver.label(a);
   L.push(`# reachgate check: ${target}`, '');
-  L.push(diff.verdict === 'pass' ? '**PASS: nothing reachable was lost and no invariant got worse than the baseline.**' : `**FAIL: ${diff.reasons.join('; ')}.**`, '');
+  L.push(diff.verdict === 'pass' && diff.incomplete ? `**INCOMPLETE: nothing got worse in the states searched, but --require-exhaustive is set and the search stopped on the ${diff.stats.after.stoppedBy} budget, so this is not a pass (exit 3).**` : diff.verdict === 'pass' ? '**PASS: nothing reachable was lost and no invariant got worse than the baseline.**' : `**FAIL: ${diff.reasons.join('; ')}.**`, '');
   L.push(`Before: ${diff.stats.before.states} states${diff.stats.before.exhaustive ? ' (exhaustive)' : ''}. After: ${diff.stats.after.states} states${diff.stats.after.exhaustive ? ' (exhaustive)' : ''}. Failing on: ${diff.failOn.join(', ')}.`, '');
   const section = (title, items, fn) => {
     if (!items.length) return;
@@ -95,7 +102,7 @@ export function diffMarkdown(diff, { target, driver }) {
     L.push('');
   };
   section('Newly violated invariants', diff.regressed, (r) => {
-    L.push(`- \`${r.id}\` (was: ${r.before}): ${esc(r.message || 'violated')}. Witness, ${r.length} steps${r.shortest ? ' (shortest)' : ''}: ${r.witness.map(lab).join(' → ') || '(the initial state)'}${r.witnessFile ? ` (\`${r.witnessFile}\`)` : ''}`);
+    L.push(`- \`${r.id}\` (was: ${r.before}): ${esc(r.message || 'violated')}. Witness, ${plural(r.length, 'step')}${r.shortest ? ' (shortest)' : ''}: ${r.witness.map(lab).join(' → ') || '(the initial state)'}${r.witnessFile ? ` (\`${r.witnessFile}\`)` : ''}`);
   });
   section('No longer reachable', diff.lost, (x) => {
     L.push(`- \`${x.label}\`: ${x.diagnosis.text}.`);
@@ -103,13 +110,14 @@ export function diffMarkdown(diff, { target, driver }) {
   });
   section('Newly reachable', diff.added, (x) => L.push(`- \`${x.label}\` via ${x.witness.map(lab).join(' → ') || '(the initial state)'}`));
   section('Fixed (violated in the baseline, holds now)', diff.fixed, (x) => L.push(`- \`${x.id}\``));
-  section('Still violated (already in the baseline, not failing the gate)', diff.stillViolated, (x) => L.push(`- \`${x.id}\`: ${esc(x.message || '')} (${x.length} steps)`));
+  section('Still violated (already in the baseline, not failing the gate)', diff.stillViolated, (x) => L.push(`- \`${x.id}\`: ${esc(x.message || '')} (${plural(x.length, 'step')})`));
   section('Invariants removed since the baseline', diff.removedInvariants.map((id) => ({ id })), (x) => L.push(`- \`${x.id}\``));
-  section('Not found by this search but still reachable via the baseline witness', diff.recovered, (x) => L.push(`- \`${x.label}\` (${x.length} steps)`));
+  section('Not found by this search but still reachable via the baseline witness', diff.recovered, (x) => L.push(`- \`${x.label}\` (${plural(x.length, 'step')})`));
   L.push('## What to do', '');
-  if (diff.verdict === 'pass') L.push('Nothing. If labels were added on purpose, run `reachgate baseline` to record them.');
+  if (diff.verdict === 'pass' && diff.incomplete) L.push('Bound the scenario (smaller value domains) or raise the budget until the report says "exhaustive", or drop --require-exhaustive if a partial search is acceptable here.');
+  else if (diff.verdict === 'pass') L.push('Nothing. If labels were added on purpose, run `reachgate baseline` to record them.');
   else {
-    L.push('1. Replay a witness to see the regression step by step: `reachgate replay <target> <witness file>` (files listed above).');
+    L.push(`1. Replay a witness to see the regression step by step: \`reachgate replay ${replayTarget(driver)} <witness file>\` (files listed above).`);
     L.push('2. If the change in behaviour is a bug, fix the code and run `reachgate check` again.');
     L.push('3. If it is intended (a feature removed on purpose), say why in the PR and run `reachgate baseline` to accept it.');
   }

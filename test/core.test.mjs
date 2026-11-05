@@ -149,12 +149,15 @@ test('CLI exit codes: 0 pass, 1 violation, 2 usage, 3 could not measure', () => 
   assert.equal(cli(['replay', 'bad.mjs', report.violations[0].witnessFile], dir).status, 0);
   assert.equal(cli(['replay', 'ok.mjs', report.violations[0].witnessFile], dir).status, 1); // replays, but no longer violates
   assert.equal(cli(['explore', 'ok.mjs', '--quiet'], dir).status, 0);
-  assert.deepEqual(readdirSync(join(dir, '.reachgate', 'witnesses')), []); // a fixed violation leaves no stale witness
+  assert.deepEqual(readdirSync(join(dir, '.reachgate', 'witnesses')), ['previous']); // a fixed violation leaves no open witness
+  assert.equal(cli(['replay', 'ok.mjs', join('.reachgate', 'witnesses', 'previous', 'small.json')], dir).status, 1); // ...but the old one confirms the fix
   assert.equal(cli(['explore', 'missing.mjs'], dir).status, 2);
   assert.equal(cli(['explore', 'ok.mjs', '--max-steps', 'lots'], dir).status, 2);
   assert.equal(cli(['check', 'ok.mjs'], dir).status, 2); // no baseline yet
   assert.equal(cli(['explore', 'boom.mjs'], dir).status, 3);
-  assert.equal(cli(['explore', 'ok.mjs', '--max-steps', '1', '--require-exhaustive', '--quiet'], dir).status, 3); // partial search: not a pass
+  const partial = cli(['explore', 'ok.mjs', '--max-steps', '1', '--require-exhaustive', '--quiet'], dir);
+  assert.equal(partial.status, 3); // partial search: not a pass
+  assert.match(partial.stdout, /^INCOMPLETE/); // and the verdict line an agent quotes doesn't say PASS
   assert.equal(cli(['explore', 'ok.mjs', '--require-exhaustive', '--quiet'], dir).status, 0);
   // the gate: baseline on ok, then check bad
   assert.equal(cli(['baseline', 'ok.mjs', '--quiet'], dir).status, 0);

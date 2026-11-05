@@ -154,6 +154,10 @@ $ reachgate explore
 PASS: 0 invariants violated · 179 states, 681 steps, 8 labels · state space exhausted · 11 ms
 ```
 
+Each run moves the previous run's witnesses to `.reachgate/witnesses/previous/`, so the old trace can
+confirm the fix: `reachgate replay .reachgate/witnesses/previous/money-conserved.json` now ends with
+`NOT REPRODUCED: the trace replays, but money-conserved no longer happens (fixed?)` and exits 1.
+
 "State space exhausted" means every reachable state of this bounded scenario was checked, not a sample.
 
 One thing to know: by default a state that violates an invariant isn't explored further, since its

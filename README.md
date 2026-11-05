@@ -22,15 +22,17 @@ says what became reachable or unreachable before you, or your coding agent, call
 ## Install
 
 ```bash
-npm install -g reachgate          # once published (see RELEASE.md)
-npm install -g github:vulbsti/reachgate   # straight from GitHub
+npm install -g github:vulbsti/reachgate
 ```
+
+Once the package is published to npm (not yet), this becomes `npm install -g reachgate`.
 
 Or from a clone: `git clone https://github.com/vulbsti/reachgate && npm install -g ./reachgate`. That
 links the clone, so keep it. Once the package is on npm, `npx reachgate ...` works without installing.
 
-**Supported:** Node.js 20 or newer on Linux and macOS (both tested in CI). Python 3.9+ for Python
-targets. Windows is untested.
+**Supported:** Node.js 20 or newer on Linux (tested in CI on Node 20 and 22). macOS is in the CI
+matrix too, but its runners haven't run on the private repo yet, so treat it as untested for now; there
+are no native dependencies. Windows is untested. Python 3.9+ for Python targets.
 
 ## Quickstart
 

@@ -139,7 +139,7 @@ page says where each tool is stronger.
 | Same seed, same exploration | *Go-Explore: same seed, same result…* |
 | Benchmark table numbers | docs/benchmarks.md (generated; medians) |
 | Zero runtime dependencies | `package.json` has no `dependencies` field |
-| Linux and macOS tested in CI | Workflow matrix `[ubuntu-latest, macos-latest] × [20, 22]`. Linux is green on GitHub; macOS: see the CI section below. |
+| Supported platforms | The README claims Linux, tested in CI. macOS is in the matrix but is explicitly called untested, because its GitHub runners never started on the private repo (see the CI section). |
 | Alternatives section | docs/alternatives.md, sourced |
 
 ### G. How to work

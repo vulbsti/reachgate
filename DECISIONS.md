@@ -95,3 +95,13 @@ each one records why, so it can be revisited.
   was not expanded. `--expand-violations` checks past them.
 - Stale witness files from earlier runs are now cleared on each run (only `*.json` in the output's
   `witnesses/` folder), because the fresh user read them as still-open violations.
+
+## D14. A non-pass never prints "PASS"; old witnesses are kept one run back
+- From the second fresh-user test: with `--require-exhaustive`, an incomplete run exited 3 but its headline
+  said PASS. Agents are told to quote the verdict line, so the headline must agree with the exit code. It
+  now reads `INCOMPLETE ...` (explore) or `**INCOMPLETE: ... not a pass (exit 3).**` (check).
+- The previous run's witnesses move to `.reachgate/witnesses/previous/` instead of being deleted. They no
+  longer look like open violations (first test), and replaying one still confirms a fix with exit 1
+  (second test).
+- A syntax error in a module the target imports names that module's file and line (Node leaves the
+  location out of errors caught from `import()`, so reachgate re-imports in a child process to get it).

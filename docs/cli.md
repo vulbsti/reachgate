@@ -28,7 +28,7 @@ These are stable, and safe to gate CI and agents on.
 | **0** | no invariant violated | baseline written | nothing got worse than the baseline | the trace replays, and its recorded violation reproduces (or, for a label witness, the label is reached) |
 | **1** | at least one invariant violated (witnesses written) | — | a regression: a label is no longer reachable, or an invariant is newly violated (see `--fail-on`) | the trace replays, but the recorded violation no longer happens or the label is not reached |
 | **2** | usage or config error: unknown option, missing target, missing baseline for `check`, bad witness path | same | same | same |
-| **3** | could not measure: `initial()` threw, the adapter died or broke protocol, a witness did not replay deterministically, or `--require-exhaustive` was set and the search stopped on a budget | same | same | the trace diverged: a step is no longer offered by `affordances()`, or it throws |
+| **3** | could not measure (the verdict line then reads INCOMPLETE or the error, never PASS): `initial()` threw, the adapter died or broke protocol, a witness did not replay deterministically, or `--require-exhaustive` was set and the search stopped on a budget | same | same | the trace diverged: a step is no longer offered by `affordances()`, or it throws |
 
 The rule behind 3 comes from "unmeasured = FAIL": reachgate never reports a pass it couldn't measure.
 
@@ -82,7 +82,7 @@ and after runs are comparable. Flags still override them.
 | --- | --- | --- |
 | `.reachgate/report.json` | explore, baseline, check | stats, invariants with status, violations with witness traces, labels with their shortest traces, `exitCode` |
 | `.reachgate/report.md` | explore, baseline, check | the same, for people |
-| `.reachgate/witnesses/<invariant>.json` | explore, baseline, check | one witness per violated invariant, one step per line |
+| `.reachgate/witnesses/<invariant>.json` | explore, baseline, check | one witness per violated invariant, one step per line. The previous run's witnesses move to `witnesses/previous/`, so `replay` on them can confirm a fix. |
 | `.reachgate/witnesses/lost_<label>.json` | check | the baseline witness of each label that is no longer reachable |
 | `.reachgate/diff.json`, `.reachgate/diff.md` | check | `verdict`, `reasons`, `lost` (with `diagnosis`), `added`, `regressed`, `fixed`, `stillViolated`, `recovered`, `removedInvariants`, before/after stats |
 | `reachgate.baseline.json` | baseline | format version, options, stats, invariant status, `labels` (label → witness trace). Commit it. |

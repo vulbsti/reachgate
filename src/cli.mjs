@@ -1,5 +1,5 @@
 // The reachgate command line. See `reachgate help` and docs/cli.md.
-import { mkdirSync, writeFileSync, readFileSync, existsSync, copyFileSync, readdirSync, rmSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readFileSync, existsSync, copyFileSync, readdirSync, rmSync, renameSync } from 'node:fs';
 import { resolve, join, relative, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadDriver, readConfig } from './load.mjs';
@@ -132,10 +132,18 @@ export async function main(argv = process.argv.slice(2), io = { out: (s) => proc
     // finite, --require-exhaustive turns "stopped on a budget" into "could not measure" (exit 3).
     const requireExhaustive = flags['require-exhaustive'] || config.requireExhaustive === true;
     const incomplete = requireExhaustive && !result.stats.exhaustive;
+    result.incomplete = incomplete;
     if (incomplete) result.warnings.push(`--require-exhaustive: the search stopped on the ${result.stats.stoppedBy} budget after ${result.stats.states} states, so not every reachable state was checked. Bound the scenario or raise the budget.`);
     mkdirSync(join(outDir, 'witnesses'), { recursive: true });
-    // Witnesses from earlier runs would look like open violations: clear the ones reachgate wrote.
-    for (const f of readdirSync(join(outDir, 'witnesses'))) if (f.endsWith('.json')) rmSync(join(outDir, 'witnesses', f));
+    // Witnesses from the previous run move to witnesses/previous/: they no longer look like open violations,
+    // but `reachgate replay` on them can still confirm a fix (exit 1: replays, violation gone).
+    const W = join(outDir, 'witnesses'), P = join(W, 'previous');
+    const old = readdirSync(W).filter((f) => f.endsWith('.json'));
+    if (old.length) {
+      mkdirSync(P, { recursive: true });
+      for (const f of readdirSync(P)) if (f.endsWith('.json')) rmSync(join(P, f));
+      for (const f of old) renameSync(join(W, f), join(P, f));
+    }
     const witnessFiles = {};
     for (const v of result.violations) {
       const f = join(outDir, 'witnesses', `${v.id.replace(/[^\w.-]+/g, '_')}.json`);
@@ -161,7 +169,7 @@ export async function main(argv = process.argv.slice(2), io = { out: (s) => proc
       if (flags.json) say(JSON.stringify(signature(result, { version: VERSION }), null, 1));
       else {
         say(summaryLine(result));
-        say(`baseline: ${rel(baselineFile)} (${Object.keys(result.labels).length} labels, ${result.invariants.length} invariants${result.violations.length ? `, ${result.violations.length} already violated: they won't fail the gate until fixed and broken again` : ''})`);
+        say(`baseline: ${rel(baselineFile)} (${Object.keys(result.labels).length} labels, ${result.invariants.length} invariants incl. built-in no-crash${result.violations.length ? `, ${result.violations.length} already violated: they won't fail the gate until fixed and broken again` : ''})`);
         for (const w of result.warnings) warn(`warning: ${w}`);
       }
       return result.violations.some((v) => v.replayed === false) || incomplete ? EXIT.ERROR : EXIT.PASS;
@@ -171,6 +179,7 @@ export async function main(argv = process.argv.slice(2), io = { out: (s) => proc
     const bad = failOn.filter((x) => !['lost', 'violation', 'new', 'removed'].includes(x));
     if (bad.length) throw new UsageError(`--fail-on: unknown ${bad.join(', ')} (use lost, violation, new, removed)`);
     const diff = await compare(driver, base, result, { failOn });
+    diff.incomplete = incomplete;
     const save = (name, trace, extra) => {
       const f = join(outDir, 'witnesses', `${name.replace(/[^\w.-]+/g, '_').slice(0, 100)}.json`);
       writeFileSync(f, witnessJson({ reachgate: 1, target: result.target, ...extra, length: trace.length, trace: trace.map((a) => ({ label: driver.label(a), action: a })) }));
@@ -209,7 +218,7 @@ async function inspect(driver, say) {
   const short = (x) => { const c = canonical(x); return c.length > 400 ? c.slice(0, 400) + '…' : c; };
   say(`target: ${driver.name} (${driver.kind}${driver.source ? ': ' + driver.source : ''})`);
   say(`invariants: ${[...driver.invariantIds, ...driver.transitionIds].join(', ') || '(none: add some, or reachgate only checks no-crash)'}`);
-  say(`deadlock detection: ${driver.deadlock ? 'on (isTerminal is defined)' : 'off (define isTerminal to turn it on)'}`);
+  say(`deadlock detection: ${driver.deadlock ? 'on (isTerminal is defined)' : `off (define ${driver.kind === 'adapter' ? 'is_terminal (Python helper) or report terminal in visit' : 'isTerminal'} to turn it on)`}`);
   say(`initial state: ${short(s)}`);
   say(`  hash ${info.hash}${info.cell ? ` · cell ${info.cell}` : ''}`);
   say(`  labels: ${info.labels.join(', ') || '(none: add observe(state) to name behaviour for the baseline)'}`);
