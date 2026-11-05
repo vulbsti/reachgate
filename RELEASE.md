@@ -15,6 +15,11 @@ docker run --rm -v "$PWD:/r" zricethezav/gitleaks git /r     # expect "no leaks 
 git log --format='%an <%ae>' | sort -u                        # expect only the GitHub noreply address
 ```
 
+## 0b. Required before going public: scrub history
+
+Follow [BLOCKED.md](BLOCKED.md) B2 (rewrite history to drop private project names, then force-push).
+Do not make the repo public until that is done.
+
 ## 1. Make the GitHub repository public
 
 ```bash
