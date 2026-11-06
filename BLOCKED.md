@@ -13,23 +13,25 @@
 - **Refused:** `git push --force-with-lease origin main` was denied by this session's permission
   classifier ("Git Destructive"). It was not worked around. `main` was restored to the pushed history,
   so normal pushes continue.
-- **To unblock (owner, before making the repo public):** from the repo root, rebuild the
-  scrubbed branch from the latest `main` (the script and term list live outside the repo, in this
-  session group's notes folder), then force-push:
+- **To unblock (owner, before making the repo public):** from the repo root, rebuild the scrubbed
+  branch from the latest `main`, then force-push. The scrub script (`reachgate-scrub.py`) and the term list
+  (`reachgate-private-terms.txt`) are kept outside the repo, in the agent-session notes folder named in the
+  session report; set `NOTES` to that folder:
 
   ```bash
-  NOTES=/path/to/session-notes
+  NOTES=/path/to/session-notes   # the folder named in the session report
   git checkout main && git branch -f scrubbed-main main
   FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch -f --tree-filter "python3 $NOTES/reachgate-scrub.py" -- scrubbed-main
-  git grep -nIiwf $NOTES/reachgate-private-terms.txt $(git rev-list scrubbed-main) | wc -l   # expect 0
+  git grep -nIiwf $NOTES/reachgate-private-terms.txt $(git rev-list scrubbed-main) | wc -l   # expect 0 (whole words)
+  git grep -nIiF -f $NOTES/reachgate-private-paths.txt $(git rev-list scrubbed-main) | wc -l   # expect 0 (paths)
   git diff main scrubbed-main --stat | wc -l                                                  # expect 0
   git checkout -B main scrubbed-main
   GH_TOKEN=$(gh auth token -u vulbsti) git push --force-with-lease origin main
   git tag -f v0.1.0 main && GH_TOKEN=$(gh auth token -u vulbsti) git push --force origin v0.1.0
   ```
 
-  Also close the Dependabot PRs, whose branches were cut from the old history. Dependabot reopens them
-  from the new `main`.
+  Also close the Dependabot PRs (#1-#3). They were cut from the old history and fail CI on Node 22,
+  because that history predates the `npm test` fix. Dependabot reopens them from the new `main`.
 
 ## Resolved
 
@@ -42,6 +44,7 @@
 
 ## Open for the owner (not blocking)
 
-- **Dependabot PRs** bumping `actions/checkout`, `actions/setup-node` and `actions/setup-python` opened
-  as soon as the repo existed. They are routine. Review and merge them, or close them, as you prefer.
+- **Dependabot PRs** #1-#3 (action version bumps) opened as soon as the repo existed. They were cut from
+  an older commit and fail CI on Node 22 for that reason. Close them; Dependabot reopens them from the
+  current `main` (see B2).
 - **Going public / publishing**: see [RELEASE.md](RELEASE.md). Nothing has been made public or published.

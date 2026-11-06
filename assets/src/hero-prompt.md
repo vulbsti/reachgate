@@ -1,7 +1,7 @@
 # Hero image: prompts and command
 
 `assets/hero.jpg` (1600x640, JPEG q86) was generated with gpt-6-luna through `codex exec` (ChatGPT
-plan, the same lean call as a minimal `codex exec` call), then cropped to 2.5:1 with Pillow.
+plan, a minimal `codex exec` call), then cropped to 2.5:1 with Pillow.
 Four candidates (a-d); **d was picked**.
 
 ## Command
@@ -9,7 +9,7 @@ Four candidates (a-d); **d was picked**.
 ```bash
 #!/usr/bin/env bash
 # gen.sh OUT PROMPTFILE -> OUT (landscape 1536x1024) via codex image generation (gpt-6-luna, ChatGPT plan)
-# Same lean call as a minimal `codex exec` call, landscape, no reference images, no crop.
+# A minimal codex exec call: landscape, no reference images, no crop.
 set -uo pipefail
 out=$1; prompt=$(cat "$2")
 msg="Call your image generation tool directly, exactly once, landscape 1536x1024. Pass the image prompt below to the tool word for word: do not rewrite, shorten or add to it. Do not read any files or skills, do not run shell commands, do not copy or save anything, do not judge the result. Image prompt: $prompt"
@@ -17,7 +17,7 @@ wd=$(dirname "$(realpath "$out")")/work_$(basename "$out" .png)_$(date +%s%N); m
 log=${out%.png}.log; t0=$(date +%s)
 bash -ic "$(printf '%q ' codex exec --ignore-user-config --skip-git-repo-check -s read-only -m gpt-6-luna -c model_reasoning_effort=low -C "$wd" -- "$msg")" </dev/null > "$log" 2>&1
 sid=$(grep -m1 -o 'session id: [0-9a-f-]*' "$log" | cut -d' ' -f3)
-png=$(ls -t $CODEX_IMAGES/$sid/*.png 2>/dev/null | head -1)
+png=$(ls -t "$CODEX_IMAGES/$sid"/*.png 2>/dev/null | head -1)   # CODEX_IMAGES: codex's generated-images folder
 [[ -n $png ]] && cp "$png" "$out"
 echo "$(basename "$out") done in $(( $(date +%s)-t0 ))s exists=$([[ -s $out ]] && echo yes || echo no)"
 ```

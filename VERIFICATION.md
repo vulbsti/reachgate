@@ -83,7 +83,7 @@ page says where each tool is stronger.
 
 | Item | Status | Evidence |
 | --- | --- | --- |
-| Own git repo at the repo root | met | `git rev-parse --show-toplevel` → that path |
+| Own git repo under the owner's `oss/` folder | met | `git rev-parse --show-toplevel` → `…/oss/reachgate`, its own repository |
 | Name checked free (GitHub, PyPI, npm), recorded | met | DECISIONS D1 (npm 404, PyPI 404, `vulbsti/reachgate` 404 on 2026-11-05) |
 | Private GitHub repo under vulbsti, pushed | met | https://github.com/vulbsti/reachgate (`gh api repos/vulbsti/reachgate --jq .private` → `true`). Created from the parent session after the owner's explicit approval, since this session's classifier had refused it (BLOCKED.md B1, resolved). |
 | Only the owner's own GitHub account used; no `gh auth switch`; no work-domain author | met | `git log --format='%an <%ae>' \| sort -u` → only `vulbsti <29302849+vulbsti@users.noreply.github.com>` (and Dependabot's noreply on its branches) |
@@ -105,7 +105,7 @@ page says where each tool is stronger.
 | Item | Status | Evidence |
 | --- | --- | --- |
 | One-command install; OS stated | met | README "Install": `npm install -g reachgate` / `npm install -g github:vulbsti/reachgate`; "Supported: Node.js 20+ on Linux and macOS…". The `npm pack --dry-run` file list ships bin, src, templates, adapters, skills and index.d.ts. |
-| Fresh-user test in a clean container, transcript saved, passes unaided | met | Two runs, each by a subagent given only the README, in a clean `node:22` container with a throwaway user, cloning a local mirror that stood in for the GitHub URL. **Run 1** ([fresh-user-run1.md](docs/verification/fresh-user-run1.md), commit `cb80b6f`): installed, ran the Quickstart, and wired a new turnstile project (JS, bug found with a 2-step witness; `check` exit 1 after removing behaviour, exit 0 after reverting), plus Python. **PASS**; its 8 friction points were fixed (D13). **Run 2** ([fresh-user.md](docs/verification/fresh-user.md), commit `669b6a1`, after those fixes): the Quickstart output matched the README exactly; it wired a new parking-garage gate (JS, 3-step witness, `check` exit 1 and then 0) and a library-loan system (Python, 4-step witness). **PASS**; its 7 points were fixed in `78cc7d6` (D14), the main one being that the INCOMPLETE verdict now matches exit 3. |
+| Fresh-user test in a clean container, transcript saved, passes unaided | met | Two runs, each by a subagent given only the README, in a clean `node:22` container with a throwaway user, cloning a local mirror that stood in for the GitHub URL. **Run 1** ([fresh-user-run1.md](docs/verification/fresh-user-run1.md), on the commit "Docs: drop private project jargon from public files…"): installed, ran the Quickstart, and wired a new turnstile project (JS, bug found with a 2-step witness; `check` exit 1 after removing behaviour, exit 0 after reverting), plus Python. **PASS**; its 8 friction points were fixed (D13). **Run 2** ([fresh-user.md](docs/verification/fresh-user.md), on the commit "VERIFICATION: state history-scrub status precisely (B2)", after those fixes): the Quickstart output matched the README exactly; it wired a new parking-garage gate (JS, 3-step witness, `check` exit 1 and then 0) and a library-loan system (Python, 4-step witness). **PASS**; its 7 points were fixed in the commit "Second fresh-user run … and its fixes" (D14), the main one being that the INCOMPLETE verdict now matches exit 3. |
 | Few meaningful tests; CI (lint + tests) green | met | 23 tests (`npm test`). GitHub Actions on the private repo: run [42074948329](https://github.com/vulbsti/reachgate/actions/runs/42074948329): all 6 jobs green, including macOS (CI section below). The same jobs also pass locally in clean containers: [docs/verification/ci-local.md](docs/verification/ci-local.md). |
 | Tag `v0.1.0`, CHANGELOG | met | `git tag` → `v0.1.0`; [CHANGELOG.md](CHANGELOG.md) |
 
@@ -123,10 +123,10 @@ page says where each tool is stronger.
 | --- | --- | --- |
 | Hero image | met | `assets/hero.jpg` (149 KB, gpt image via codex; prompts in `assets/src/hero-prompt.md`) |
 | Architecture diagram, SVG, light and dark | met | `assets/architecture-{light,dark}.svg` via `<picture>`; checked in `assets/src/preview-{light,dark}.png` |
-| Demo GIF of the real tool | met | `assets/demo.gif` (338 KB, VHS in Docker running the real CLI; `assets/src/demo/{Dockerfile,demo.tape}`) |
+| Demo GIF of the real tool | met | `assets/demo.gif` (342 KB, VHS in Docker running the real CLI; `assets/src/demo/{Dockerfile,demo.tape}`) |
 | Explainer visual | met | `assets/explore-coverage-{light,dark}.svg`, drawn from real BFS and Go-Explore runs by `assets/src/explainer/coverage.mjs` |
-| Sources in `assets/src/`; each image < 2 MB; README media < 10 MB | met | README media total 608 KB (`du -ch assets/hero.jpg assets/demo.gif assets/*.svg`) |
-| Every asset checked in light and dark | met | Hero and diagrams: `assets/src/preview-*.png`. Explainer and GIF frames were checked by the manager session (screenshots, not committed). |
+| Sources in `assets/src/`; each image < 2 MB; README media < 10 MB | met | README media total 595 KB (`du -ch assets/hero.jpg assets/demo.gif assets/*.svg`) |
+| Every asset checked in light and dark | met | Hero and diagrams: `assets/src/preview-{light,dark}.png` (README mock-up screenshots). Explainer: `assets/src/checks/explainer-{light,dark}.png`. Demo GIF (re-recorded after the last output change): `assets/src/checks/demo-frame-{14,33}s.png`. |
 
 ### F. Honesty
 
@@ -147,14 +147,14 @@ page says where each tool is stronger.
 | Item | Status | Evidence |
 | --- | --- | --- |
 | Manager delegated and verified | met | Subagents built the examples, hygiene, visuals and alternatives research. The manager re-ran every example command, found and fixed core bugs during review (un-awaited `return` in try/finally, EPIPE exit code, adapter shutdown timer, Node 22 `npm test`), and added `--require-exhaustive`. |
-| No questions to the owner; decisions recorded | met | [DECISIONS.md](DECISIONS.md) D1–D13 |
-| Owner-only items in BLOCKED.md | met | [BLOCKED.md](BLOCKED.md): B1 resolved; open, non-blocking: Dependabot PRs and going public. |
+| No questions to the owner; decisions recorded | met | [DECISIONS.md](DECISIONS.md) D1–D14 |
+| Owner-only items in BLOCKED.md | met | [BLOCKED.md](BLOCKED.md): **B2 open** (history scrub needs an owner-approved force-push; gates going public); B1 resolved; also close the stale Dependabot PRs. |
 | Final adversarial audit passes | met | See "Final audit" below. |
 
 ## CI on GitHub
 
-Run [42074948329](https://github.com/vulbsti/reachgate/actions/runs/42074948329) (commit `669b6a1`), the
-full workflow:
+Run [42074948329](https://github.com/vulbsti/reachgate/actions/runs/42074948329) (on the commit "VERIFICATION: state history-scrub status
+precisely (B2)"), the full workflow:
 
 | Job | Result |
 | --- | --- |
@@ -172,3 +172,6 @@ to clear the queue.
 ## Final audit
 
 _Filled in after the audit runs._
+
+
+Commit references here are by subject, not SHA, because the history rewrite in BLOCKED.md B2 changes every SHA.

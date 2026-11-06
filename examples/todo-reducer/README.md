@@ -100,7 +100,7 @@ Record a baseline on the good code, then check the change against it:
 ```console
 $ node bin/reachgate.mjs baseline examples/todo-reducer/target.mjs#fixed --baseline .reachgate/todo-baseline.json
 PASS: 0 invariants violated · 25465 states, 189625 steps, 31 labels · state space exhausted · 5366 ms
-baseline: .reachgate/todo-baseline.json (31 labels, 5 invariants)
+baseline: .reachgate/todo-baseline.json (31 labels, 5 invariants incl. built-in no-crash)
 
 $ node bin/reachgate.mjs check examples/todo-reducer/target.mjs#regressed --baseline .reachgate/todo-baseline.json
 # reachgate check: todo-reducer (history refactor)

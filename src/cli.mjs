@@ -45,7 +45,8 @@ Options:
   --quiet                     no progress line on stderr (the summary still prints)
 
 Exit codes: 0 pass · 1 fail (violation found, or check found a regression) · 2 usage/config error ·
-            3 could not measure (target crashed in initial(), adapter died, witness not deterministic)`;
+            3 could not measure (target crashed in initial(), adapter died, witness not deterministic,
+              or --require-exhaustive and the search stopped on a budget)`;
 
 const NUM = { 'max-steps': 'maxSteps', 'max-states': 'maxStates', 'max-seconds': 'maxSeconds', 'max-depth': 'maxDepth', seed: 'seed', rollout: 'rollout' };
 const STR = new Set(['strategy', 'cmd', 'config', 'baseline', 'out', 'fail-on', 'lang']);

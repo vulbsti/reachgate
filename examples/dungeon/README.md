@@ -104,12 +104,16 @@ With the default 200,000-step budget:
 
 ```console
 $ node bin/reachgate.mjs explore examples/dungeon/target.mjs#deep
-PASS: 0 invariants violated · 66774 states, 200000 steps, 14 labels · stopped by steps budget · 3732 ms
+PASS: 0 invariants violated · 66774 states, 200000 steps, 14 labels · stopped by steps budget · 2658 ms
+report: .reachgate/report.md
 
 $ node bin/reachgate.mjs explore examples/dungeon/target.mjs#deep --strategy go-explore
-FAIL: 1 invariant violated · 10108 states, 200000 steps, 23 labels · stopped by steps budget · 4062 ms
+FAIL: 1 invariant violated · 10108 states, 200000 steps, 23 labels · stopped by steps budget · 2759 ms
   ✗ no-softlock: the exit can no longer be reached: the key is stuck in the locked door at (6,8)
     witness (47 steps, 1-minimal): right → right → wait → down → right → wait → right → right → down → right → right → right → right → right → right → right → up → up → right → down → right → right → right → down → right → down → down → down → left → left → down → left → left → left → left → left → up → left → left → left → left → up → left → down → down → wait → up
+    replay: reachgate replay examples/dungeon/target.mjs#deep .reachgate/witnesses/no-softlock.json
+warning: 4 state(s) that violate an invariant were not explored further, so the invariants reported as holding were only checked on the other states. Fix the violations, or rerun with --expand-violations to check past them.
+report: .reachgate/report.md
 ```
 
 BFS runs out of budget at depth 32 and never reaches the well room (no `room:well` label). The BFS

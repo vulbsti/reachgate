@@ -170,7 +170,7 @@ violation, or run with `--expand-violations` to keep exploring past it.
 ```
 $ reachgate baseline
 PASS: 0 invariants violated · 179 states, 681 steps, 8 labels · state space exhausted · 10 ms
-baseline: reachgate.baseline.json (8 labels, 3 invariants)
+baseline: reachgate.baseline.json (8 labels, 3 invariants incl. built-in no-crash)
 ```
 
 Commit `reachgate.baseline.json` and `reachgate.config.json`. Add `.reachgate/` to `.gitignore`.

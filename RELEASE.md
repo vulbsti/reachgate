@@ -4,7 +4,7 @@ The repository was created **private** and nothing has been published. These are
 run when you decide to go public. Each step is independent: you can make the repo public without
 publishing to npm, for example.
 
-Run them from the repo root (the repo root).
+Run them from the repo root.
 
 ## 0. Final checks
 
