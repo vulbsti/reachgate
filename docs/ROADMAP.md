@@ -28,6 +28,8 @@ with only the files named.
 
 ## Bigger items
 
+- **Name the unbounded field.** When BFS stops on its budget, compare the deepest states and name
+  the fields that keep growing ("`s.history.length` grew in every level"), so users know what to bound.
 - **Batched adapter calls.** Each transition costs two JSON round trips (`step`, then `visit`). A
   `expand` method that steps every offered action of a state and visits the results in one call would
   cut adapter overhead several-fold (see the checkout-py rows in `docs/benchmarks.md`).

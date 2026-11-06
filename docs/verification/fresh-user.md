@@ -1,131 +1,106 @@
 # reachgate: fresh-user transcript
 
-Every command below ran inside container `rg-fresh2` as user `tester` via
-`docker exec -u tester rg-fresh2 bash -ic '<command>'`. Outputs are real; long outputs are trimmed
-(marked `...`). Bash's "no job control" noise from `-i` is omitted.
-
 ## Setup
 
+Sandbox: Docker container `rg-fresh3`, user `tester`, Node v22.23.4, npm 10.9.9, Python 3.11.2.
+
 ```console
-$ git clone /srv/reachgate.git ~/reachgate      # README's GitHub URL substituted with the mirror
-Cloning into '/home/tester/reachgate'...
-done.
-$ git -C ~/reachgate rev-parse --short HEAD
-669b6a1
-$ cat ~/reachgate/README.md
-(read in full)
-$ node --version && npm --version
-v22.23.4
-10.9.9
+$ git clone /srv/reachgate.git ~/reachgate
+$ git -C ~/reachgate log -1 --format='%h %s'
+cc7a138 Second audit fixes: no private paths or session IDs in docs, current outputs re-pasted, GIF re-recorded with committed frame checks, help text, VERIFICATION refs by subject
 ```
 
-**Commit tested: `669b6a1`**
+**Commit tested: `cc7a138`.** Read README.md and docs/wire-in-15-minutes.md (linked from the README). Did not read src/ or tests.
 
 ## Install
 
-README: "Or from a clone: `git clone https://github.com/vulbsti/reachgate && npm install -g ./reachgate`".
+README: `npm install -g github:vulbsti/reachgate`. No GitHub in the sandbox, so I used the README's other form, "from a clone: `git clone ... && npm install -g ./reachgate`", with the mirror.
 
 ```console
-$ cd ~ && npm install -g ./reachgate
-added 1 package in 189ms
-$ which reachgate
-/home/tester/.npm-global/bin/reachgate
-$ reachgate --version
-0.1.0
-$ reachgate --help
-reachgate 0.1.0: explore your code's reachable states, check invariants, gate changes on a baseline.
+$ npm install -g ./reachgate
 
-Usage:
-  reachgate explore  [target]            explore, check invariants, write .reachgate/report.{json,md}
-  reachgate baseline [target]            explore and record the behaviour baseline (reachgate.baseline.json)
-  reachgate check    [target]            explore again and diff against the baseline (the gate)
-  reachgate replay   [target] <witness>  replay a witness trace step by step
-  reachgate inspect  [target]            show the initial state, its actions and invariants (wiring check)
-  reachgate init     [--lang js|python]  write a starter target and reachgate.config.json
-...
-Exit codes: 0 pass · 1 fail (violation found, or check found a regression) · 2 usage/config error ·
-            3 could not measure (target crashed in initial(), adapter died, witness not deterministic)
+added 1 package in 268ms
+[exit 0]
 ```
 
-Notes: worked first time. The first line of the Install block (`npm install -g reachgate  # once
-published`) does not work today; the working options come second and third.
+```console
+$ which reachgate; reachgate --version; reachgate --help
+/home/tester/.npm-global/bin/reachgate
+0.1.0
+reachgate 0.1.0: explore your code's reachable states, check invariants, gate changes on a baseline.
+... (full usage text, options and exit codes; matched README) ...
+[exit 0]
+```
+
+Install was instant: zero dependencies, binary on PATH, `--help` is clear.
 
 ## Quickstart
 
+Run from the clone, exactly as in the README:
+
 ```console
-$ cd ~/reachgate && reachgate explore examples/dungeon/target.mjs; echo EXIT=$?
-FAIL: 1 invariant violated · 10772 states, 35881 steps, 18 labels · state space exhausted · 363 ms
+$ reachgate explore examples/dungeon/target.mjs
+FAIL: 1 invariant violated · 10772 states, 35881 steps, 18 labels · state space exhausted · 519 ms
   ✗ no-softlock: the exit can no longer be reached: the key is stuck in the locked door at (8,4)
     witness (13 steps, shortest): down → right → right → right → right → right → right → up → right → down → down → up → wait
     replay: reachgate replay examples/dungeon/target.mjs .reachgate/witnesses/no-softlock.json
 warning: 16 state(s) that violate an invariant were not explored further, so the invariants reported as holding were only checked on the other states. Fix the violations, or rerun with --expand-violations to check past them.
 report: .reachgate/report.md
-EXIT=1
+[exit 1]
 ```
 
-**Comparison with README:** identical except timing (363 ms vs 505 ms). Same states/steps/labels,
-same 13-step witness, same warning.
-
-Followed the printed replay hint:
+**Matches the README output line for line** (same 10772 states, 35881 steps, 18 labels, same 13-step witness, same warning). Only the timing differs (519 ms vs 505 ms). I also ran the printed replay command:
 
 ```console
-$ reachgate replay examples/dungeon/target.mjs .reachgate/witnesses/no-softlock.json; echo EXIT=$?
+$ reachgate replay examples/dungeon/target.mjs .reachgate/witnesses/no-softlock.json
 replaying 13 step(s) on dungeon (cellar, seeded bug) (recorded violation: no-softlock)
   0. initial()
        + room:cellar
   1. down
   2. right
        + picked:potion
-...
+  3. right
+  4. right
+       + room:passage
+  5. right
+       + room:well
+  6. right
+  7. right
+  8. up
+       + picked:key
+  9. right
+ 10. down
+ 11. down
+ 12. up
  13. wait
        + key:knocked-loose
        ✗ no-softlock: the exit can no longer be reached: the key is stuck in the locked door at (8,4)
 REPRODUCED: no-softlock at step 13
-EXIT=0
+[exit 0]
 ```
 
-`git status --short` in the clone stays clean afterwards (`.reachgate/` is gitignored). Good.
+`.reachgate/` written inside the clone is git-ignored (`git status --short` was empty).
 
 ## Wiring my own project
 
-Project: **parking-garage gate controller** in `~/garage` (outside the clone), ordinary ES module code,
-with a planted off-by-one in the capacity check.
+Project: a **document approval workflow** in `~/approval` (outside the clone, plain `git init`, no package.json). An author submits, reviewers approve or request changes, and two approvals are needed. **Planted bug:** `approve` doesn't check whether this reviewer already approved, so one reviewer approving twice counts as two approvals.
 
-```console
-$ mkdir -p ~/garage/src && cd ~/garage && git init -q
-$ cat package.json
-{ "name": "garage", "version": "1.0.0", "type": "module", "private": true }
-$ cat src/garage.js
-// Parking-garage gate controller.
-export const RATE_PER_HOUR = 3;
+The planted-bug version of `approve`:
 
-export function createGarage(capacity = 2) {
-  return { capacity, occupied: 0, tickets: {}, nextTicket: 1, revenue: 0, gate: "closed", log: [] };
+```js
+export function approve(doc, reviewer) {
+  if (doc.status !== 'in-review') return 'invalid';
+  if (reviewer === doc.author) return 'forbidden';
+  doc.approvals.push(reviewer);            // BUG: no duplicate check
+  if (doc.approvals.length >= REQUIRED_APPROVALS) doc.status = 'approved';
+  return 'ok';
 }
-
-// A car pulls up to the entry gate.
-export function enter(g) {
-  if (g.occupied > g.capacity) { g.log.push("full"); return null; } // BUG: should be >=
-  const id = g.nextTicket++;
-  g.tickets[id] = { paid: false };
-  g.occupied += 1;
-  g.gate = "entry-open";
-  g.log.push("entered");
-  return id;
-}
-
-// Driver pays at the machine for a ticket.
-export function pay(g, id, hours) { ... marks ticket paid, revenue += hours * RATE_PER_HOUR ... }
-
-// Car pulls up to the exit gate with a ticket.
-export function exit(g, id) { ... refuses unpaid tickets; else deletes ticket, occupied -= 1 ... }
-$ echo ".reachgate/" > .gitignore
 ```
 
 ### init
 
 ```console
-$ reachgate init; echo EXIT=$?
+$ reachgate init
 wrote reachgate.target.mjs, reachgate.config.json
 next:
   1. edit reachgate.target.mjs: point initial/affordances/step at your code, add invariants
@@ -133,7 +108,10 @@ next:
   3. reachgate explore        find violations
   4. reachgate baseline       record behaviour (commit reachgate.baseline.json; add .reachgate/ to .gitignore)
   5. reachgate check          after every change: the gate
-EXIT=0
+[exit 0]
+```
+
+```console
 $ cat reachgate.config.json
 {
   "target": "./reachgate.target.mjs",
@@ -143,453 +121,465 @@ $ cat reachgate.config.json
   "baseline": "reachgate.baseline.json",
   "out": ".reachgate"
 }
-$ reachgate explore; echo EXIT=$?        # the starter toy door, which the guide says fails
-FAIL: 1 invariant violated · 4 states, 5 steps, 7 labels · state space exhausted · 1 ms
-  ✗ open-door-is-unlocked: the door is open and locked
-    witness (2 steps, shortest): open → lock
-    replay: reachgate replay ./reachgate.target.mjs .reachgate/witnesses/open-door-is-unlocked.json
-report: .reachgate/report.md
-EXIT=1
+[exit 0]
 ```
 
-Matches the guide.
+The starter `reachgate.target.mjs` is a commented toy door target, and every hook is explained inline. I replaced it with:
 
-### The target I wrote (`reachgate.target.mjs`)
-
-Following the guide's advice: thin hooks calling real code, a ghost variable (`arrivals`) capped in
-`affordances` to bound the scenario (ticket numbers otherwise grow forever).
+`~/approval/reachgate.target.mjs`:
 
 ```js
-import { createGarage, enter, pay, exit } from "./src/garage.js";
+import { createDoc, submit, approve, requestChanges, withdraw } from './src/approval.js';
 
-/** @type {import("reachgate").Target} */
+const USERS = ['alice', 'bob', 'carol'];
+const OPS = { submit, approve, requestChanges, withdraw };
+
 export default {
-  name: "garage",
-  initial: () => ({ g: createGarage(2), arrivals: 0 }),
-  affordances: ({ g, arrivals }) => [
-    ...(arrivals < 4 ? [{ type: "arrive" }] : []),
-    ...Object.keys(g.tickets).flatMap((id) => [
-      ...(!g.tickets[id].paid ? [{ type: "pay", id: Number(id), hours: 1 }, { type: "pay", id: Number(id), hours: 3 }] : []),
-      { type: "exit", id: Number(id) },
-    ]),
-  ],
+  name: 'doc-approval',
+  initial: () => ({ doc: createDoc('alice') }),
+  // Anyone may try anything; the workflow decides what is allowed.
+  // Bound the scenario: at most two rounds of requested changes, so the state space is finite.
+  affordances: ({ doc }) =>
+    USERS.flatMap((user) => Object.keys(OPS).map((op) => ({ op, user })))
+      .filter((a) => a.op !== "requestChanges" || doc.revision < 3),
   step: (s, a) => {
-    if (a.type === "arrive") { enter(s.g); s.arrivals += 1; }
-    if (a.type === "pay") pay(s.g, a.id, a.hours);
-    if (a.type === "exit") exit(s.g, a.id);
-    s.g.log = s.g.log.slice(-1); // keep only the last event so states do not differ by history
+    OPS[a.op](s.doc, a.user);
     return s;
   },
   invariants: {
-    "never-over-capacity": ({ g }) => g.occupied <= g.capacity || `${g.occupied} cars parked in a ${g.capacity}-space garage`,
-    "tickets-match-cars": ({ g }) => Object.keys(g.tickets).length === g.occupied || `${Object.keys(g.tickets).length} open tickets but ${g.occupied} cars`,
+    'approved-by-two-distinct-reviewers': ({ doc }) => {
+      if (doc.status !== 'approved') return true;
+      const distinct = new Set(doc.approvals);
+      if (distinct.has(doc.author)) return `author ${doc.author} approved their own document`;
+      return distinct.size >= 2 || `approved with approvals [${doc.approvals.join(', ')}]: only ${distinct.size} distinct reviewer(s)`;
+    },
   },
-  observe: ({ g }) => [`parked:${g.occupied}`, ...(g.log.length ? [`event:${g.log[0]}`] : []), ...(g.revenue >= 6 ? ["revenue:6+"] : [])],
-  label: (a) => (a.type === "arrive" ? "arrive" : a.type === "pay" ? `pay #${a.id} ${a.hours}h` : `exit #${a.id}`),
+  observe: ({ doc }) => [`status:${doc.status}`],
+  label: (a) => `${a.user} ${a.op}`,
 };
 ```
+
+(The `affordances` bound on `requestChanges` was added after the first explore, see below.)
 
 ### inspect
 
 ```console
-$ reachgate inspect; echo EXIT=$?
-target: garage (in-process: ./reachgate.target.mjs)
-invariants: never-over-capacity, tickets-match-cars
+$ reachgate inspect
+target: doc-approval (in-process: ./reachgate.target.mjs)
+invariants: approved-by-two-distinct-reviewers
 deadlock detection: off (define isTerminal to turn it on)
-initial state: {"arrivals":0,"g":{"capacity":2,"gate":"closed","log":[],"nextTicket":1,"occupied":0,"revenue":0,"tickets":{}}}
-  hash vaxp9mtNaZ5Q8Q19KWTxTJn4Po8
-  labels: parked:0
+initial state: {"doc":{"approvals":[],"author":"alice","revision":1,"status":"draft"}}
+  hash i7ktSB-UqLBDIYf1yVf2b4VCgX8
+  labels: status:draft
   violations: none
-  1 action(s):
-    arrive  →  new state
-EXIT=0
+  12 action(s):
+    alice submit  →  new state
+    alice approve  →  same state
+    alice requestChanges  →  same state
+    alice withdraw  →  same state
+    bob submit  →  same state
+    bob approve  →  same state
+    bob requestChanges  →  same state
+    bob withdraw  →  same state
+    carol submit  →  same state
+    carol approve  →  same state
+    carol requestChanges  →  same state
+    carol withdraw  →  same state
+[exit 0]
 ```
 
-### explore (finds the bug)
+Helpful: it shows every action and whether it leads to a new state.
+
+### explore: bug found
 
 ```console
-$ reachgate explore; echo EXIT=$?
-FAIL: 1 invariant violated · 389 states, 1096 steps, 21 labels · state space exhausted · 19 ms
-  ✗ never-over-capacity: 3 cars parked in a 2-space garage
-    witness (3 steps, shortest): arrive → arrive → arrive
-    replay: reachgate replay ./reachgate.target.mjs .reachgate/witnesses/never-over-capacity.json
-warning: 32 state(s) that violate an invariant were not explored further, so the invariants reported as holding were only checked on the other states. Fix the violations, or rerun with --expand-violations to check past them.
+$ reachgate explore
+FAIL: 1 invariant violated · 20376 states, 200000 steps, 16 labels · stopped by steps budget · 945 ms
+  ✗ approved-by-two-distinct-reviewers: approved with approvals [bob, bob]: only 1 distinct reviewer(s)
+    witness (3 steps, shortest): alice submit → bob approve → bob approve
+    replay: reachgate replay ./reachgate.target.mjs .reachgate/witnesses/approved-by-two-distinct-reviewers.json
 report: .reachgate/report.md
-EXIT=1
+[exit 1]
 ```
 
-Found on the first run, shortest witness, exhaustive.
-
-### replay
+The bug was found right away (3-step shortest witness). Note `stopped by steps budget`: my `revision` counter grows forever. The guide's "Bound the scenario" section predicts exactly this, so after replaying the witness I capped `requestChanges` at revision < 3 in `affordances` and explored again:
 
 ```console
-$ reachgate replay .reachgate/witnesses/never-over-capacity.json; echo EXIT=$?
-replaying 3 step(s) on garage (recorded violation: never-over-capacity)
+$ reachgate replay .reachgate/witnesses/approved-by-two-distinct-reviewers.json
+replaying 3 step(s) on doc-approval (recorded violation: approved-by-two-distinct-reviewers)
   0. initial()
-       + parked:0
-  1. arrive
-       + parked:1
-       + event:entered
-  2. arrive
-       + parked:2
-  3. arrive
-       + parked:3
-       ✗ never-over-capacity: 3 cars parked in a 2-space garage
-REPRODUCED: never-over-capacity at step 3
-EXIT=0
+       + status:draft
+  1. alice submit
+       + status:in-review
+  2. bob approve
+  3. bob approve
+       + status:approved
+       ✗ approved-by-two-distinct-reviewers: approved with approvals [bob, bob]: only 1 distinct reviewer(s)
+REPRODUCED: approved-by-two-distinct-reviewers at step 3
+[exit 0]
 ```
-
-`.reachgate/report.md` (excerpt):
-
-```
-**FAIL: 1 invariant violated · 389 states, 1096 steps, 21 labels · state space exhausted · 19 ms**
-- Explored 389 distinct states, deepest trace 12 steps. Every reachable state was visited.
-- First violation (`never-over-capacity`) after 2 ms, 6 steps, 7 states.
-...
-Replay: `reachgate replay <target> .reachgate/witnesses/never-over-capacity.json`
-...
-| `action:exit #1` | 1 steps |
-```
-
-(Small nits: "`<target>`" placeholder in the report while the CLI prints the real path; "1 steps".)
-
-### fix, explore again
-
-Changed `>` to `>=` in `enter`.
 
 ```console
-$ reachgate explore; echo EXIT=$?
-PASS: 0 invariants violated · 567 states, 1687 steps, 21 labels · state space exhausted · 31 ms
+$ reachgate explore
+FAIL: 1 invariant violated · 30 states, 261 steps, 16 labels · state space exhausted · 5 ms
+  ✗ approved-by-two-distinct-reviewers: approved with approvals [bob, bob]: only 1 distinct reviewer(s)
+    witness (3 steps, shortest): alice submit → bob approve → bob approve
+    replay: reachgate replay ./reachgate.target.mjs .reachgate/witnesses/approved-by-two-distinct-reviewers.json
 report: .reachgate/report.md
-EXIT=0
-$ reachgate replay .reachgate/witnesses/never-over-capacity.json; echo EXIT=$?
-reachgate: witness not found: /home/tester/garage/.reachgate/witnesses/never-over-capacity.json
-EXIT=2
+[exit 1]
 ```
 
-**Surprise:** the passing `explore` deleted the old witness, so I could not use the README's
-"`replay` ... 1 when it replays but the violation no longer happens (fixed?)" to confirm the fix.
-Neither the README nor the guide mentions this. Workaround: recreate the bug, copy the witness out,
-fix, replay the copy:
+Now `state space exhausted` (30 states).
+
+### fix, explore again, replay the previous witness
+
+Fix: `if (doc.approvals.includes(reviewer)) return 'already approved';` before the push.
 
 ```console
-$ sed -i "s|g.occupied >= g.capacity|g.occupied > g.capacity|" src/garage.js && reachgate explore --quiet >/dev/null
-warning: 32 state(s) that violate an invariant were not explored further, ...
-$ cp .reachgate/witnesses/never-over-capacity.json /tmp/capacity-witness.json
-$ sed -i "s|g.occupied > g.capacity|g.occupied >= g.capacity|" src/garage.js
-$ reachgate replay /tmp/capacity-witness.json; echo EXIT=$?
-replaying 3 step(s) on garage (recorded violation: never-over-capacity)
+$ reachgate explore
+PASS: 0 invariants violated · 24 states, 261 steps, 16 labels · state space exhausted · 4 ms
+report: .reachgate/report.md
+[exit 0]
+```
+
+The guide says: "Each run moves the previous run's witnesses to `.reachgate/witnesses/previous/`". It did:
+
+```console
+$ reachgate replay .reachgate/witnesses/previous/approved-by-two-distinct-reviewers.json
+replaying 3 step(s) on doc-approval (recorded violation: approved-by-two-distinct-reviewers)
   0. initial()
-       + parked:0
-  1. arrive
-       + parked:1
-       + event:entered
-  2. arrive
-       + parked:2
-  3. arrive
-       + event:full
-NOT REPRODUCED: the trace replays, but never-over-capacity no longer happens (fixed?)
-EXIT=1
-$ reachgate explore --quiet; echo EXIT=$?
-PASS: 0 invariants violated · 567 states, 1687 steps, 21 labels · state space exhausted · 24 ms
-report: .reachgate/report.md
-EXIT=0
+       + status:draft
+  1. alice submit
+       + status:in-review
+  2. bob approve
+  3. bob approve
+NOT REPRODUCED: the trace replays, but approved-by-two-distinct-reviewers no longer happens (fixed?)
+[exit 1]
 ```
 
-That replay output is very nice: you can see the gate now says `event:full` at step 3.
+Exit 1 with `NOT REPRODUCED ... (fixed?)`, exactly as the guide says.
 
 ### baseline
 
 ```console
-$ reachgate baseline; echo EXIT=$?
-PASS: 0 invariants violated · 567 states, 1687 steps, 21 labels · state space exhausted · 26 ms
-baseline: reachgate.baseline.json (21 labels, 3 invariants)
-EXIT=0
-$ git add -A && git commit -qm "garage + reachgate baseline" && git log --oneline
-6170c0b garage + reachgate baseline
+$ reachgate baseline
+PASS: 0 invariants violated · 24 states, 261 steps, 16 labels · state space exhausted · 5 ms
+baseline: reachgate.baseline.json (16 labels, 2 invariants incl. built-in no-crash)
+[exit 0]
 ```
 
-"3 invariants" with my 2: the third is the built-in `no-crash` (the guide's hook table mentions it).
+(My first `git commit` failed because the container has no git identity, a sandbox issue. I set a local user.name/email and committed: `6e42042 approval workflow + reachgate baseline`.)
 
-### check on unchanged code
+### behaviour-removing change, then check
+
+A plausible refactor slip: `requestChanges` checks the old status name `'submitted'`, so "changes requested" can never happen. No invariant breaks.
 
 ```console
-$ reachgate check; echo EXIT=$?
-# reachgate check: garage
-
-**PASS: nothing reachable was lost and no invariant got worse than the baseline.**
-
-Before: 567 states (exhaustive). After: 567 states (exhaustive). Failing on: lost, violation.
-
-## What to do
-
-Nothing. If labels were added on purpose, run `reachgate baseline` to record them.
-
-EXIT=0
+$ git diff src/
+diff --git a/src/approval.js b/src/approval.js
+index 8d1ded2..c3bf968 100644
+--- a/src/approval.js
++++ b/src/approval.js
+@@ -23,7 +23,7 @@ export function approve(doc, reviewer) {
+ }
+ 
+ export function requestChanges(doc, reviewer) {
+-  if (doc.status !== 'in-review') return 'invalid';
++  if (doc.status !== 'submitted') return 'invalid';
+   if (reviewer === doc.author) return 'forbidden';
+   doc.status = 'changes-requested';
+   doc.revision += 1;
+[exit 0]
 ```
 
-### regression: "keep one space free for staff"
-
-First attempt was my own sed mistake (a `//` comment swallowed the rest of the line), which gave:
-
 ```console
-$ reachgate check; echo EXIT=$?
-reachgate: could not measure: could not import /home/tester/garage/reachgate.target.mjs: Unexpected token 'export'
-EXIT=3
-```
-
-Exit 3 is right, but the message names the target file, not `src/garage.js` where the syntax error
-actually was, which sent me looking in the wrong file first. Redone correctly:
-
-```console
-$ git checkout src/garage.js
-$ sed -i "s|if (g.occupied >= g.capacity) {|if (g.occupied >= g.capacity - 1) { /* keep one space free for staff */|" src/garage.js
-$ reachgate check; echo EXIT=$?
-# reachgate check: garage
+$ reachgate check
+# reachgate check: doc-approval
 
 **FAIL: 1 label(s) no longer reachable.**
 
-Before: 567 states (exhaustive). After: 148 states (exhaustive). Failing on: lost, violation.
+Before: 24 states (exhaustive). After: 6 states (exhaustive). Failing on: lost, violation.
 
 ## No longer reachable (1)
 
-- `parked:2`: the baseline witness still replays all 2 step(s), but "parked:2" no longer shows up anywhere along it: the code behaves differently on the same steps.
-  Baseline witness: arrive → arrive (`.reachgate/witnesses/lost_parked_2.json`)
+- `status:changes-requested`: the baseline witness still replays all 2 step(s), but "status:changes-requested" no longer shows up anywhere along it: the code behaves differently on the same steps.
+  Baseline witness: alice submit → bob requestChanges (`.reachgate/witnesses/lost_status_changes-requested.json`)
 
 ## What to do
 
-1. Replay a witness to see the regression step by step: `reachgate replay <target> <witness file>` (files listed above).
+1. Replay a witness to see the regression step by step: `reachgate replay ./reachgate.target.mjs <witness file>` (files listed above).
 2. If the change in behaviour is a bug, fix the code and run `reachgate check` again.
 3. If it is intended (a feature removed on purpose), say why in the PR and run `reachgate baseline` to accept it.
 
-EXIT=1
-$ reachgate replay .reachgate/witnesses/lost_parked_2.json; echo EXIT=$?
-replaying 2 step(s) on garage
+[exit 1]
+```
+
+Exit 1 with a clear explanation: the lost label, its baseline witness, and the fact that the witness still replays but the label no longer shows up. `.reachgate/diff.md` has the same content. Replaying the lost witness:
+
+```console
+$ reachgate replay .reachgate/witnesses/lost_status_changes-requested.json
+replaying 2 step(s) on doc-approval
   0. initial()
-       + parked:0
-  1. arrive
-       + parked:1
-       + event:entered
-  2. arrive
-       + event:full
-NOT REACHED: the trace replays, but parked:2 is not reached along it (the baseline witness still replays all 2 step(s), but "parked:2" no longer shows up anywhere along it: the code behaves differently on the same steps)
-EXIT=1
+       + status:draft
+  1. alice submit
+       + status:in-review
+  2. bob requestChanges
+NOT REACHED: the trace replays, but status:changes-requested is not reached along it (the baseline witness still replays all 2 step(s), but "status:changes-requested" no longer shows up anywhere along it: the code behaves differently on the same steps)
+[exit 1]
 ```
 
-Invariants all still hold; only the baseline caught it, exit 1, clear explanation. Exactly as advertised.
-
-### revert, check passes
+### revert, then check passes
 
 ```console
-$ git checkout src/garage.js && reachgate check; echo EXIT=$?
-Updated 1 path from the index
-# reachgate check: garage
-
-**PASS: nothing reachable was lost and no invariant got worse than the baseline.**
-...
-EXIT=0
+$ git checkout -- src/approval.js && git status --short
+[exit 0]
 ```
 
-### --require-exhaustive
-
 ```console
-$ reachgate check --require-exhaustive --quiet; echo EXIT=$?
-# reachgate check: garage
+$ reachgate check
+# reachgate check: doc-approval
 
 **PASS: nothing reachable was lost and no invariant got worse than the baseline.**
 
-Before: 567 states (exhaustive). After: 567 states (exhaustive). Failing on: lost, violation.
-...
-EXIT=0
-```
-
-Forcing a budget stop to see exit 3:
-
-```console
-$ reachgate check --require-exhaustive --max-steps 100; echo EXIT=$?
-# reachgate check: garage
-
-**PASS: nothing reachable was lost and no invariant got worse than the baseline.**
-
-Before: 567 states (exhaustive). After: 56 states. Failing on: lost, violation.
-
-## Not found by this search but still reachable via the baseline witness (3)
-
-- `action:exit #4` (8 steps)
-- `action:pay #4 1h` (8 steps)
-- `action:pay #4 3h` (8 steps)
+Before: 24 states (exhaustive). After: 24 states (exhaustive). Failing on: lost, violation.
 
 ## What to do
 
 Nothing. If labels were added on purpose, run `reachgate baseline` to record them.
-warning: --require-exhaustive: the search stopped on the steps budget after 56 states, so not every reachable state was checked. Bound the scenario or raise the budget.
 
-EXIT=3
-$ reachgate explore --require-exhaustive --max-steps 100; echo EXIT=$?
-PASS: 0 invariants violated · 56 states, 100 steps, 18 labels · stopped by steps budget · 4 ms
-warning: --require-exhaustive: the search stopped on the steps budget after 56 states, so not every reachable state was checked. Bound the scenario or raise the budget.
-report: .reachgate/report.md
-EXIT=3
+[exit 0]
 ```
 
-**Surprise:** the bold verdict line says **PASS** and "What to do: Nothing", yet the exit code is 3
-("could not measure"). The README tells agents to "Quote its verdict line in the PR"; an agent would
-quote PASS for a run that actually failed the gate.
+### check --require-exhaustive
+
+```console
+$ reachgate check --require-exhaustive
+# reachgate check: doc-approval
+
+**PASS: nothing reachable was lost and no invariant got worse than the baseline.**
+
+Before: 24 states (exhaustive). After: 24 states (exhaustive). Failing on: lost, violation.
+
+## What to do
+
+Nothing. If labels were added on purpose, run `reachgate baseline` to record them.
+
+[exit 0]
+```
+
+I also checked that the flag bites when the budget is too small:
+
+```console
+$ reachgate check --require-exhaustive --max-steps 50
+# reachgate check: doc-approval
+
+**INCOMPLETE: nothing got worse in the states searched, but --require-exhaustive is set and the search stopped on the steps budget, so this is not a pass (exit 3).**
+
+Before: 24 states (exhaustive). After: 8 states. Failing on: lost, violation.
+
+## What to do
+
+Bound the scenario (smaller value domains) or raise the budget until the report says "exhaustive", or drop --require-exhaustive if a partial search is acceptable here.
+warning: --require-exhaustive: the search stopped on the steps budget after 8 states, so not every reachable state was checked. Bound the scenario or raise the budget.
+
+[exit 3]
+```
 
 ## Python
 
-Project: **library loan system** in `~/library` (a `Library` class with holds queue). Planted bug:
-collecting a held book does not remove the member from the hold queue.
+Fresh directory `~/thermo`: a **thermostat controller** (heater + A/C, modes off/heat/cool/auto). **Planted bug:** `set_mode` only clears the outputs on `off`, so switching from heat to cool leaves the heater running, and the next tick turns the A/C on as well.
 
 ```console
-$ python3 --version
-Python 3.11.2
-$ mkdir -p ~/library && cd ~/library && reachgate init --lang python; echo EXIT=$?
+$ reachgate init --lang python
 wrote reachgate_target.py, reachgate_adapter.py, reachgate.config.json
 next:
   1. edit reachgate_target.py: point initial/affordances/step at your code, add invariants
-  ...
-EXIT=0
-$ cat reachgate.config.json
+  2. reachgate inspect        check the wiring
+  3. reachgate explore        find violations
+  4. reachgate baseline       record behaviour (commit reachgate.baseline.json; add .reachgate/ to .gitignore)
+  5. reachgate check          after every change: the gate
+[exit 0]
+```
+
+```console
+$ ls; cat reachgate.config.json
+reachgate.config.json
+reachgate_adapter.py
+reachgate_target.py
 {
   "target": "./reachgate_target.py",
-  ...
+  "strategy": "bfs",
+  "maxSteps": 200000,
+  "maxStates": 100000,
+  "baseline": "reachgate.baseline.json",
+  "out": ".reachgate"
 }
+[exit 0]
 ```
 
-`library.py` (excerpt):
+The starter Python target (a toy door) runs out of the box, and its seeded bug is found:
+
+```console
+$ reachgate explore
+FAIL: 1 invariant violated · 4 states, 5 steps, 7 labels · state space exhausted · 3 ms
+  ✗ open-door-is-unlocked: the door is open and locked
+    witness (2 steps, shortest): open → lock
+    replay: reachgate replay ./reachgate_target.py .reachgate/witnesses/open-door-is-unlocked.json
+report: .reachgate/report.md
+[exit 1]
+```
+
+My code, with the planted bug shown in the original `set_mode`:
 
 ```python
-class Library:
-    def __init__(self, books):
-        self.status = {b: "shelf" for b in books}   # shelf | loaned | hold-shelf
-        self.loans = {}                              # book -> member
-        self.holds = {b: [] for b in books}          # book -> queue of members
-
-    def checkout(self, member, book):
-        st = self.status[book]
-        if st == "loaned":
-            return "on loan"
-        if st == "hold-shelf" and self.holds[book][0] != member:
-            return "held for someone else"
-        self.status[book] = "loaned"
-        self.loans[book] = member
-        # BUG: forgot to remove the member from the hold queue when they collect a held book
-        return "ok"
-    # place_hold, return_book, to_dict, from_dict ...
+def set_mode(t, mode):
+    t["mode"] = mode
+    if mode == "off":          # BUG: switching heat -> cool leaves the heater on
+        t["heater"] = False
+        t["cooler"] = False
 ```
 
-`reachgate_target.py` (excerpt): members `ann`, `bob`, one book `dune`; `step` does
-`Library.from_dict(s)`, calls the real method, returns `lib.to_dict()`; invariants
-`borrower-not-in-own-queue` and `status-matches-loans`; then `serve(name="library", ...)`.
+`~/thermo/reachgate_target.py`:
 
-My first version had a Python 3.11 f-string mistake; the adapter error came through clearly:
+```python
+"""reachgate target for the thermostat controller."""
+from reachgate_adapter import serve
+from thermostat import new_thermostat, set_mode, tick
 
-```console
-$ reachgate inspect; echo EXIT=$?
-reachgate: could not measure: adapter exited (code 1): File "/home/tester/library/reachgate_target.py", line 45 |     return f"{book} status {st} but loans={s[\"loans\"]}" |                                                          ^ | SyntaxError: f-string expression part cannot include a backslash
-EXIT=3
+TEMP_MIN, TEMP_MAX = 16, 24  # bound the scenario
+
+
+def affordances(s):
+    acts = [{"type": "tick"}]
+    acts += [{"type": "mode", "mode": m} for m in ("off", "heat", "cool", "auto") if m != s["mode"]]
+    if s["temp"] < TEMP_MAX:
+        acts.append({"type": "warmer"})  # environment: the room warms by 1 degree
+    if s["temp"] > TEMP_MIN:
+        acts.append({"type": "colder"})
+    return acts
+
+
+def step(s, a):
+    if a["type"] == "tick":
+        tick(s)
+    elif a["type"] == "mode":
+        set_mode(s, a["mode"])
+    elif a["type"] == "warmer":
+        s["temp"] += 1
+    elif a["type"] == "colder":
+        s["temp"] -= 1
+    return s
+
+
+serve(
+    name="thermostat",
+    initial=lambda: new_thermostat(),
+    affordances=affordances,
+    step=step,
+    invariants={
+        "never-heat-and-cool": lambda s: not (s["heater"] and s["cooler"]) or "heater and A/C are both on",
+        "off-means-off": lambda s: s["mode"] != "off" or not (s["heater"] or s["cooler"]) or "mode is off but something is running",
+    },
+    observe=lambda s: [f"mode:{s['mode']}"] + (["heating"] if s["heater"] else []) + (["cooling"] if s["cooler"] else []),
+    label=lambda a: f"mode {a['mode']}" if a["type"] == "mode" else a["type"],
+)
 ```
 
-After fixing my typo:
-
 ```console
-$ reachgate inspect; echo EXIT=$?
-target: library (adapter: python3 /home/tester/library/reachgate_target.py)
-invariants: borrower-not-in-own-queue, status-matches-loans
-deadlock detection: off (define isTerminal to turn it on)
-initial state: {"holds":{"dune":[]},"loans":{},"status":{"dune":"shelf"}}
-  hash _V9pF83U1JpfUpodLSnX33gSwNo
-  labels: dune:shelf, holds:0
+$ reachgate inspect
+target: thermostat (adapter: python3 /home/tester/thermo/reachgate_target.py)
+invariants: never-heat-and-cool, off-means-off
+deadlock detection: off (define is_terminal (Python helper) or report terminal in visit to turn it on)
+initial state: {"cooler":false,"heater":false,"mode":"off","setpoint":20,"temp":20}
+  hash xo91IGCLDmLlBELyKwukPh0BVHg
+  labels: mode:off
   violations: none
-  4 action(s):
-    checkout ann dune  →  new state
-    hold ann dune  →  same state
-    checkout bob dune  →  new state
-    hold bob dune  →  same state
-EXIT=0
-$ reachgate explore; echo EXIT=$?
-FAIL: 1 invariant violated · 13 states, 40 steps, 11 labels · state space exhausted · 10 ms
-  ✗ borrower-not-in-own-queue: bob has dune on loan and is still in its hold queue
-    witness (4 steps, shortest): checkout ann dune → hold bob dune → return dune → checkout bob dune
-    replay: reachgate replay ./reachgate_target.py .reachgate/witnesses/borrower-not-in-own-queue.json
-report: .reachgate/report.md
-warning: 4 state(s) that violate an invariant were not explored further, so the invariants reported as holding were only checked on the other states. Fix the violations, or rerun with --expand-violations to check past them.
-EXIT=1
-$ reachgate replay ./reachgate_target.py .reachgate/witnesses/borrower-not-in-own-queue.json; echo EXIT=$?
-replaying 4 step(s) on library (recorded violation: borrower-not-in-own-queue)
-  0. initial()
-       + dune:shelf
-       + holds:0
-  1. checkout ann dune
-       + dune:loaned
-  2. hold bob dune
-       + holds:1
-  3. return dune
-       + dune:hold-shelf
-  4. checkout bob dune
-       ✗ borrower-not-in-own-queue: bob has dune on loan and is still in its hold queue
-REPRODUCED: borrower-not-in-own-queue at step 4
-EXIT=0
+  6 action(s):
+    tick  →  same state
+    mode heat  →  new state
+    mode cool  →  new state
+    mode auto  →  new state
+    warmer  →  new state
+    colder  →  new state
+[exit 0]
 ```
-
-Fixed (`if st == "hold-shelf": self.holds[book].pop(0)`):
 
 ```console
-$ reachgate explore; echo EXIT=$?
-PASS: 0 invariants violated · 9 states, 40 steps, 11 labels · state space exhausted · 8 ms
+$ reachgate explore
+FAIL: 1 invariant violated · 98 states, 520 steps, 13 labels · state space exhausted · 39 ms
+  ✗ never-heat-and-cool: heater and A/C are both on
+    witness (7 steps, shortest): mode heat → colder → tick → mode cool → warmer → warmer → tick
+    replay: reachgate replay ./reachgate_target.py .reachgate/witnesses/never-heat-and-cool.json
+warning: 8 state(s) that violate an invariant were not explored further, so the invariants reported as holding were only checked on the other states. Fix the violations, or rerun with --expand-violations to check past them.
 report: .reachgate/report.md
-EXIT=0
-$ reachgate baseline --quiet; echo EXIT=$?
-PASS: 0 invariants violated · 9 states, 40 steps, 11 labels · state space exhausted · 8 ms
-baseline: reachgate.baseline.json (11 labels, 3 invariants)
-EXIT=0
-$ reachgate check --quiet | head -3
-# reachgate check: library
-
-**PASS: nothing reachable was lost and no invariant got worse than the baseline.**
-EXIT=0
+[exit 1]
 ```
 
-Notes: `inspect` on a Python target says "define isTerminal", but the guide says the Python hook is
-`is_terminal`. In the Python run the `report:` line printed before the `warning:` line (opposite order
-to JS); cosmetic.
+Found: a 7-step shortest witness (heat on, switch to cool, warm up, tick: both running).
+
+```console
+$ reachgate replay .reachgate/witnesses/never-heat-and-cool.json
+replaying 7 step(s) on thermostat (recorded violation: never-heat-and-cool)
+  0. initial()
+       + mode:off
+  1. mode heat
+       + mode:heat
+  2. colder
+  3. tick
+       + heating
+  4. mode cool
+       + mode:cool
+  5. warmer
+  6. warmer
+  7. tick
+       + cooling
+       ✗ never-heat-and-cool: heater and A/C are both on
+REPRODUCED: never-heat-and-cool at step 7
+[exit 0]
+```
+
+Fixed `set_mode` (clear any output the new mode does not drive), then:
+
+```console
+$ reachgate explore
+PASS: 0 invariants violated · 72 states, 416 steps, 13 labels · state space exhausted · 126 ms
+report: .reachgate/report.md
+[exit 0]
+```
+
+```console
+$ reachgate replay .reachgate/witnesses/previous/never-heat-and-cool.json
+replaying 7 step(s) on thermostat (recorded violation: never-heat-and-cool)
+  0. initial()
+       + mode:off
+  1. mode heat
+       + mode:heat
+  2. colder
+  3. tick
+       + heating
+  4. mode cool
+       + mode:cool
+  5. warmer
+  6. warmer
+  7. tick
+       + cooling
+NOT REPRODUCED: the trace replays, but never-heat-and-cool no longer happens (fixed?)
+[exit 1]
+```
 
 ## Friction and suggestions
 
-Most to least important:
+Nothing blocked me. Every step in the README and the guide worked the first time, and the outputs had the shape the docs show. In rough order of importance:
 
-1. **Verdict line says PASS when the exit code is 3.** With `--require-exhaustive` and a budget stop,
-   both `explore` ("PASS: 0 invariants violated · ... stopped by steps budget") and `check`
-   ("**PASS: nothing reachable was lost...**", "What to do: Nothing.") print PASS and exit 3. The
-   README's agent snippet says "`reachgate check` must pass. Quote its verdict line in the PR." An
-   agent quoting the verdict line would report PASS. Suggest a distinct verdict (e.g. "INCOMPLETE") or
-   document that exit code, not the headline, is authoritative.
-2. **A passing `explore` deletes old witness files**, so you can't confirm a fix with the replay exit
-   code 1 that the README advertises ("1 when it replays but the violation no longer happens
-   (fixed?)"). The guide says "Fix it (...) and explore again" with no hint. Suggest documenting
-   "replay before re-exploring, or copy the witness" (or keep stale witnesses somewhere).
-3. **Import error names the wrong file.** A syntax error in `src/garage.js` was reported as
-   "could not import /home/tester/garage/reachgate.target.mjs: Unexpected token 'export'". Including
-   the underlying file/line (or the error stack) would save time.
-4. **Install section leads with a command that doesn't work yet:**
-   "`npm install -g reachgate          # once published (see RELEASE.md)`". Put the working
-   GitHub/clone commands first.
-5. **`inspect` on a Python target** says "define isTerminal to turn it on", while the guide says
-   Python uses snake_case "`is_terminal`".
-6. **Placeholders in generated reports:** `report.md` says "Replay: `reachgate replay <target> ...`"
-   and `check` says "`reachgate replay <target> <witness file>`", while `explore`'s terminal output
-   prints the real command. Fill in the real target. Also "1 steps" in the labels table.
-7. The invariant count in "baseline: ... (21 labels, 3 invariants)" includes the built-in `no-crash`;
-   briefly confusing when you wrote 2. A short "(incl. no-crash)" would help.
+1. **Unbounded state hit me first, but the docs caught it.** My first real explore said `stopped by steps budget` because a revision counter grows forever. The guide's "Bound the scenario" section says exactly what to do, and the fix took one line. Suggestion: when a run stops on a budget, the summary could name the state fields whose values keep growing (or point to the guide section). A newcomer who only read the README Quickstart might not connect "stopped by steps budget" with "your counter is unbounded".
+2. **ESM in `src/*.js` without a package.json.** The guide's example imports `./src/vending.js`, which uses `export`, and never mentions `"type": "module"`. I copied that pattern (no package.json) and it worked silently on Node 22. The README claims support for "Node.js 20 or newer". I could not test Node 20 here, but older Node 20 releases may refuse ESM syntax in a `.js` file with no `"type": "module"`. A one-line note in the guide ("if your code is ESM `.js`, make sure package.json has `\"type\": \"module\"`") would remove the doubt.
+3. **The warning about unexpanded violating states was missing when I expected it.** The guide says: "While a violation is open, the other invariants are only checked on the states that don't violate anything, and reachgate prints a warning saying so." In my doc-approval run (1 violation open) no such warning printed. In the Quickstart and the Python run it did. This is probably correct (the violating state's successors may all be already-seen states), but the doc reads as if the warning always appears.
+4. **Two replay spellings.** The guide uses `reachgate replay .reachgate/witnesses/money-conserved.json` (no target), but explore prints `reachgate replay ./reachgate.target.mjs <file>`. Both work (the target comes from the config). A short sentence saying the target argument is optional when a config exists would help.
+5. **Minor wording.** On a PASS, `check` says "If labels were added on purpose, run `reachgate baseline` to record them" even when no labels were added. It could say "No new labels." in that case.
+6. **Sandbox only, not reachgate:** `git commit` needs a git identity. Also, I could not test the `npm install -g github:vulbsti/reachgate` form itself (no GitHub access). The clone-and-install form from the README worked.
 
-What went well: install, init, inspect and explore all worked first time. The Quickstart output
-matched the README exactly apart from timing. The guide's "bound the scenario" and "ghost variable"
-advice was exactly what my garage target needed (ticket IDs grow forever otherwise). The lost-label
-diagnosis in `check` was precise and easy to act on. The Python adapter error passthrough was clear.
+What worked especially well: `inspect` (showing "new state / same state" per action makes wiring mistakes obvious), shortest witnesses that read like a bug report, `witnesses/previous/` for confirming a fix, and the `check` diff explaining *why* a label is lost (the witness still replays, but the label no longer appears). The Python helper needed no installation at all.
 
 ## Verdict
 
-**PASS.** Tasks 1-4 done using only the README and docs/wire-in-15-minutes.md (plus a grep of
-docs/cli.md to confirm the witness-deletion behaviour isn't documented). No outside help. The only
-errors I hit were my own typos, and the tool's messages were enough to fix them.
+**PASS.** Tasks 1 to 4 were done using only the README and the linked 15-minute guide, with no outside help, at commit `cc7a138`. Install worked, and the Quickstart matched the README apart from timing. In my JS project, explore found the planted bug, replay showed it, and after the fix the previous witness did not reproduce. `check` exited 1 with a clear explanation after a behaviour-removing change and 0 after the revert, and `--require-exhaustive` passed (it also exits 3 when the budget is too small). In Python, `init --lang python` worked and explore found the planted bug.

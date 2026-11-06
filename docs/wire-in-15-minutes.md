@@ -8,6 +8,10 @@ steps with `reachgate init --lang python` (see the end).
 
 ## 0. The code you already have (`src/vending.js`)
 
+It's an ES module, so the project's `package.json` has `"type": "module"`. Without that, name the file
+`vending.mjs`: Node 22 detects ES module syntax in `.js` files on its own, but Node 20 does not. A
+CommonJS project can `import` its `require`-style modules from the target as usual.
+
 ```js
 export const PRICES = { cola: 150, chips: 100 };
 
@@ -161,8 +165,9 @@ confirm the fix: `reachgate replay .reachgate/witnesses/previous/money-conserved
 "State space exhausted" means every reachable state of this bounded scenario was checked, not a sample.
 
 One thing to know: by default a state that violates an invariant isn't explored further, since its
-successors are usually more of the same breakage. While a violation is open, the other invariants are
-only checked on the states that don't violate anything, and reachgate prints a warning saying so. Fix the
+successors are usually more of the same breakage. While a violation is open, your other invariants are
+only checked on the states that don't violate anything. When that could hide something (you have other
+invariants that still hold), reachgate prints a warning saying so. Fix the
 violation, or run with `--expand-violations` to keep exploring past it.
 
 ## 5. Record the baseline (1 minute)

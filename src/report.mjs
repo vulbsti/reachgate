@@ -115,7 +115,7 @@ export function diffMarkdown(diff, { target, driver }) {
   section('Not found by this search but still reachable via the baseline witness', diff.recovered, (x) => L.push(`- \`${x.label}\` (${plural(x.length, 'step')})`));
   L.push('## What to do', '');
   if (diff.verdict === 'pass' && diff.incomplete) L.push('Bound the scenario (smaller value domains) or raise the budget until the report says "exhaustive", or drop --require-exhaustive if a partial search is acceptable here.');
-  else if (diff.verdict === 'pass') L.push('Nothing. If labels were added on purpose, run `reachgate baseline` to record them.');
+  else if (diff.verdict === 'pass') L.push(diff.added.length ? 'Nothing is failing. If the newly reachable labels above are intended, run `reachgate baseline` to record them.' : 'Nothing.');
   else {
     L.push(`1. Replay a witness to see the regression step by step: \`reachgate replay ${replayTarget(driver)} <witness file>\` (files listed above).`);
     L.push('2. If the change in behaviour is a bug, fix the code and run `reachgate check` again.');
