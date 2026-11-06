@@ -1,0 +1,7 @@
+{
+  "variants": [
+    { "target": "target.mjs", "strategy": "bfs" },
+    { "target": "target.mjs#fixed", "strategy": "bfs" },
+    { "target": "target.mjs#regressed", "strategy": "bfs" }
+  ]
+}

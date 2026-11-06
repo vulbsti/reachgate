@@ -1,6 +1,6 @@
 """Run a Python reachgate target and record its peak RSS (KiB) to a file when it exits.
 
-Used by bench/run.mjs: python3 bench/py_rss.py <rss-file> <target.py>. The CLI ends the adapter with
+Used by bench/run.mjs: python3 bench/py_rss.py <rss-file> <target.py> [target args...]. The CLI ends the adapter with
 SIGTERM right after the shutdown reply, so the RSS is written from a signal handler as well as atexit.
 """
 import atexit
@@ -24,6 +24,6 @@ def on_term(*_):
 
 atexit.register(record)
 signal.signal(signal.SIGTERM, on_term)
-sys.argv = [target]
+sys.argv = [target, *sys.argv[3:]]  # forward the target's own arguments (e.g. --fixed)
 sys.path[0] = target.rsplit("/", 1)[0] if "/" in target else "."
 runpy.run_path(target, run_name="__main__")

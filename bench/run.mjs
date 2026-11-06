@@ -4,6 +4,7 @@
 // Examples are discovered as examples/<name>/target.mjs or target.py. An optional
 // examples/<name>/bench.json lists the variants to run:
 //   {"variants": [{"target": "target.mjs#deep", "strategy": "go-explore", "maxSteps": 200000, "seed": 1}]}
+// A .py variant may add "args": ["--fixed"] (passed to the adapter script).
 // Without it, one BFS run of target.mjs (or target.py) with the default budgets.
 //
 // Each variant runs the real CLI in a child process (`reachgate explore <target> --json --quiet`) N
@@ -58,7 +59,7 @@ function runOnce(example, variant) {
   const path = join(example.dir, variant.target);
   const py = extname(file) === '.py';
   const args = ['explore'];
-  if (py) args.push('--cmd', `python3 "${PY_RSS}" "${join(tmp, 'adapter.rss')}" "${join(example.dir, file)}"`);
+  if (py) args.push('--cmd', `python3 "${PY_RSS}" "${join(tmp, 'adapter.rss')}" "${join(example.dir, file)}"${(variant.args ?? []).map((x) => ` ${x}`).join('')}`);
   else args.push(path);
   for (const [k, flag] of Object.entries(FLAGS)) if (variant[k] !== undefined) args.push(flag, String(variant[k]));
   args.push('--json', '--quiet', '--out', join(tmp, 'out'));
@@ -153,7 +154,7 @@ function markdown(results, m, runs) {
     for (const v of ex.variants) {
       const r = v.runs[0], md = v.median, fv = r.firstViolation;
       const budget = [v.maxSteps ? `${num(v.maxSteps)} steps` : 'default', v.seed !== undefined ? `seed ${v.seed}` : ''].filter(Boolean).join(', ');
-      L.push(`| \`${v.target}\` | ${v.strategy ?? 'bfs'} | ${budget} | ${r.violations.join(', ') || 'none'} | ${num(r.states)} | ${num(r.steps)} | ${r.depth} | ${r.stoppedBy}${md.deterministic ? '' : ' (varied!)'} | ${fv ? `${md.firstViolationMs} ms, ${num(fv.steps)} steps` : ''} | ${fv?.witness ?? ''} | ${(md.wallMs / 1000).toFixed(2)} s | ${mb(md.nodeRssKb)}${py ? ` | ${mb(md.adapterRssKb)}` : ''} |`);
+      L.push(`| \`${v.target}${v.args ? ' ' + v.args.join(' ') : ''}\` | ${v.strategy ?? 'bfs'} | ${budget} | ${r.violations.join(', ') || 'none'} | ${num(r.states)} | ${num(r.steps)} | ${r.depth} | ${r.stoppedBy}${md.deterministic ? '' : ' (varied!)'} | ${fv ? `${md.firstViolationMs} ms, ${num(fv.steps)} steps` : ''} | ${fv?.witness ?? ''} | ${(md.wallMs / 1000).toFixed(2)} s | ${mb(md.nodeRssKb)}${py ? ` | ${mb(md.adapterRssKb)}` : ''} |`);
     }
   }
   return L.join('\n') + '\n';

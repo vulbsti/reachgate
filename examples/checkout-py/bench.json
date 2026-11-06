@@ -1,0 +1,6 @@
+{
+  "variants": [
+    { "target": "target.py", "strategy": "bfs" },
+    { "target": "target.py", "args": ["--fixed"], "strategy": "bfs" }
+  ]
+}

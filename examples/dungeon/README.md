@@ -91,6 +91,7 @@ The fixed game passes, and that's a full proof for this level, not a sample:
 ```console
 $ node bin/reachgate.mjs explore examples/dungeon/target.mjs#fixed
 PASS: 0 invariants violated · 11306 states, 37594 steps, 18 labels · state space exhausted · 631 ms
+report: .reachgate/report.md
 ```
 
 ## Go-Explore vs BFS on a bigger level

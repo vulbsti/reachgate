@@ -70,7 +70,7 @@ pull request and update any affected baseline in the same change.
 
 ## Release steps (maintainer)
 
-1. Bump `version` in `package.json`.
+1. Bump `version` in `package.json` and in `.claude-plugin/plugin.json` (keep them equal).
 2. Move the `Unreleased` entries in `CHANGELOG.md` under a new `## [X.Y.Z] - YYYY-MM-DD`
    heading and update the compare links at the bottom.
 3. Run `npm test` (and `npm run lint`).

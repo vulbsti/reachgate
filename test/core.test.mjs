@@ -155,6 +155,10 @@ test('CLI exit codes: 0 pass, 1 violation, 2 usage, 3 could not measure', () => 
   assert.equal(cli(['explore', 'ok.mjs', '--max-steps', 'lots'], dir).status, 2);
   assert.equal(cli(['check', 'ok.mjs'], dir).status, 2); // no baseline yet
   assert.equal(cli(['explore', 'boom.mjs'], dir).status, 3);
+  writeFileSync(join(dir, 'flaky.mjs'), "let calls = 0; // hidden state outside the target's state\nexport default { initial: () => ({ n: 0 }), affordances: (s) => (s.n < 3 ? ['inc'] : []), step: (s) => ({ n: s.n + 1 }), invariants: { small: (s) => s.n < 3 || ++calls > 1 } };\n");
+  const flaky = cli(['explore', 'flaky.mjs', '--quiet'], dir);
+  assert.equal(flaky.status, 3); // a violation it can't reproduce is not reported as a FAIL or a PASS
+  assert.match(flaky.stdout, /^COULD NOT MEASURE/);
   const partial = cli(['explore', 'ok.mjs', '--max-steps', '1', '--require-exhaustive', '--quiet'], dir);
   assert.equal(partial.status, 3); // partial search: not a pass
   assert.match(partial.stdout, /^INCOMPLETE/); // and the verdict line an agent quotes doesn't say PASS

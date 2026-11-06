@@ -116,7 +116,8 @@ export async function explore(driver, options = {}) {
       const hit = (r) => r.violations.find((x) => x.id === v.id && x.at === trace.length);
       out.replayed = !!hit(a) && !!hit(b) && a.finalHash === b.finalHash;
       if (!out.replayed) {
-        out.message = v.message;
+        // A witness that doesn't reproduce proves nothing about length either.
+        Object.assign(out, { message: v.message, shortest: false, minimal: 'none' });
         warnings.push(`witness for "${v.id}" did not replay to the same violation: the target is not deterministic (hidden state, time, randomness or I/O in step/affordances?)`);
       }
       if (hit(a)) out.message = hit(a).message;

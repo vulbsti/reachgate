@@ -154,9 +154,9 @@ Medians of 3 runs of the real CLI on a 16-core laptop (AMD Ryzen AI 7 PRO 350, N
 | dungeon (BFS) | 10,772 (exhaustive) | 54 ms | 0.43 s | 105 MB |
 | dungeon `#deep` (BFS, 200k steps) | 66,774 (budget) | not found | 3.81 s | 204 MB |
 | dungeon `#deep` (Go-Explore, 200k steps, seeds 1-5) | 9,248-12,794 (budget) | 1.0-1.9 s | 3.7-7.3 s | 81-85 MB |
-| todo-reducer (BFS) | 27,049 (exhaustive) | 44 ms | 2.50 s | 151 MB |
-| auth-session (BFS) | 2,688 (exhaustive) | 50 ms | 0.31 s | 84 MB |
-| checkout-py (BFS, Python adapter) | 4,290 (exhaustive) | 176 ms | 0.78 s | 83 MB Node + 13 MB Python |
+| todo-reducer (BFS) | 27,049 (exhaustive) | 11 ms | 1.41 s | 149 MB |
+| auth-session (BFS) | 2,688 (exhaustive) | 53 ms | 0.44 s | 84 MB |
+| checkout-py (BFS, Python adapter) | 4,290 (exhaustive) | 186 ms | 1.00 s | 84 MB Node + 13 MB Python |
 
 State counts are exact and deterministic. Times and memory depend on the machine. The weak spot:
 the Python adapter costs two JSON round trips per transition. Batching them is on the [roadmap](docs/ROADMAP.md).

@@ -49,7 +49,7 @@ export function summaryLine(result) {
   const s = result.stats;
   const bad = result.violations.length;
   const space = s.exhaustive ? 'state space exhausted' : `stopped by ${s.stoppedBy} budget`;
-  const verdict = bad ? 'FAIL' : result.incomplete ? 'INCOMPLETE (exit 3: --require-exhaustive, the search stopped on a budget)' : 'PASS';
+  const verdict = result.violations.some((v) => v.replayed === false) ? 'COULD NOT MEASURE (exit 3: a witness did not replay deterministically)' : bad ? 'FAIL' : result.incomplete ? 'INCOMPLETE (exit 3: --require-exhaustive, the search stopped on a budget)' : 'PASS';
   return `${verdict}: ${plural(bad, 'invariant')} violated · ${plural(s.states, 'state')}, ${plural(s.steps, 'step')}, ${Object.keys(result.labels).length} labels · ${space} · ${s.ms} ms`;
 }
 

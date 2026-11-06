@@ -17,8 +17,9 @@ git log --format='%an <%ae>' | sort -u                        # expect only the 
 
 ## 0b. Required before going public: scrub history
 
-Follow [BLOCKED.md](BLOCKED.md) B2 (rewrite history to drop private project names, then force-push).
-Do not make the repo public until that is done.
+Follow [BLOCKED.md](BLOCKED.md) B2: archive the current private repo under another name, and push the
+scrubbed history to a freshly created `vulbsti/reachgate`. A force-push is not enough, because GitHub
+keeps old commits reachable through PR refs and Actions runs. Do not make any repo public until that is done.
 
 ## 1. Make the GitHub repository public
 
@@ -32,10 +33,10 @@ GH_TOKEN=$(gh auth token -u vulbsti) gh api repos/vulbsti/reachgate/private-vuln
 
 ## 2. Publish a GitHub release for v0.1.0
 
-The tag `v0.1.0` already exists on the remote.
+The tag `v0.1.0` is pushed to the new repo in B2 step 3.
 
 ```bash
-GH_TOKEN=$(gh auth token -u vulbsti) gh release create v0.1.0 --title "reachgate 0.1.0" --notes-file <(sed -n '/## \[0.1.0\]/,/^## \[/p' CHANGELOG.md | sed '$d')
+GH_TOKEN=$(gh auth token -u vulbsti) gh release create v0.1.0 --title "reachgate 0.1.0" --notes-file <(awk '/^## \[0.1.0\]/{on=1; next} on && /^(## \[|\[[^]]+\]: )/{exit} on' CHANGELOG.md)
 ```
 
 ## 3. Publish to npm
