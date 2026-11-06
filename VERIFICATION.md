@@ -52,7 +52,7 @@ Status key: **met**, or **blocked** (needs the owner; see [BLOCKED.md](BLOCKED.m
 | [auth-session](examples/auth-session/) | protocol flow (auth) | 7 (shortest) | `test/example-auth-session.test.mjs` |
 | [checkout-py](examples/checkout-py/) | protocol flow (checkout, Python) | 6 (shortest) | `test/example-checkout-py.test.mjs` |
 
-Each README explains why its N is minimal. Each fixed variant passes with `state space exhausted`.
+Each README explains why its N is minimal. Each BFS fixed variant passes with `state space exhausted`. The Go-Explore `#deepFixed` run passes within its step budget.
 
 ### 6. Agent skill, 15-minute guide, and a fresh-user test that wires a new project: met
 
@@ -148,7 +148,7 @@ page says where each tool is stronger.
 | --- | --- | --- |
 | Manager delegated and verified | met | Subagents built the examples, hygiene, visuals and alternatives research. The manager re-ran every example command, found and fixed core bugs during review (un-awaited `return` in try/finally, EPIPE exit code, adapter shutdown timer, Node 22 `npm test`), and added `--require-exhaustive`. |
 | No questions to the owner; decisions recorded | met | [DECISIONS.md](DECISIONS.md) D1–D14 |
-| Owner-only items in BLOCKED.md | met | [BLOCKED.md](BLOCKED.md): **B2 open** (archive this repo and push the scrubbed history to a fresh one; gates going public); B1 resolved; also close the stale Dependabot PRs. |
+| Owner-only items in BLOCKED.md | met | [BLOCKED.md](BLOCKED.md): **B2 open** (archive this repo and push the scrubbed history to a fresh one; gates going public); B1 resolved. The stale Dependabot PRs stay behind in the archived repo, and Dependabot opens fresh ones on the new repo. |
 | Final adversarial audit passes | met | See "Final audit" below. |
 
 ## CI on GitHub

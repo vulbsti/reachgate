@@ -31,7 +31,8 @@ npm run bench   # benchmarks; results are described in docs/benchmarks.md
 ```
 
 Please run `npm test` and `npm run lint` before opening a pull request. CI runs both on
-Linux and macOS with Node 20 and 22.
+Linux and macOS with Node 20 and 22 (lint runs once, on Linux with Node 22), and the Python adapter
+example is also tested on Python 3.9.
 
 As a quick end-to-end check, the bundled examples should still give the expected verdicts:
 
@@ -75,5 +76,5 @@ pull request and update any affected baseline in the same change.
    heading and update the compare links at the bottom.
 3. Run `npm test` (and `npm run lint`).
 4. Commit, then tag: `git tag vX.Y.Z`.
-5. Push the tag: `git push origin vX.Y.Z`.
+5. Push the branch and the tag: `git push origin main vX.Y.Z`.
 6. Publishing to npm is done by the maintainer with `npm publish`.

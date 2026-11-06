@@ -24,6 +24,7 @@ keeps old commits reachable through PR refs and Actions runs. Do not make any re
 ## 1. Make the GitHub repository public
 
 ```bash
+# --accept-visibility-change-consequences needs a recent gh (2.62+); on older gh, drop the flag and confirm the prompt
 GH_TOKEN=$(gh auth token -u vulbsti) gh repo edit vulbsti/reachgate --visibility public --accept-visibility-change-consequences
 GH_TOKEN=$(gh auth token -u vulbsti) gh repo edit vulbsti/reachgate \
   --description "Explore your real code's reachable states, get shortest replayable witnesses for invariant violations, and gate changes on a behavioural baseline. Built for coding agents." \
