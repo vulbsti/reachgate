@@ -106,8 +106,8 @@ page says where each tool is stronger.
 | --- | --- | --- |
 | One-command install; OS stated | met | README "Install": `npm install -g reachgate` / `npm install -g github:vulbsti/reachgate`; "Supported: Node.js 20+ on Linux and macOS…". The `npm pack --dry-run` file list ships bin, src, templates, adapters, skills and index.d.ts. |
 | Fresh-user test in a clean container, transcript saved, passes unaided | met | Four runs, each by a fresh subagent given only the README, in a clean Docker container (`node:22` for runs 1–3, `node:20` for run 4) with a throwaway user, cloning a local mirror in place of the GitHub URL. Each wired a **new project of its own**. **Run 1** ([fresh-user-run1.md](docs/verification/fresh-user-run1.md)): a turnstile in JS (2-step witness) plus Python. PASS; 8 friction points fixed (D13). **Run 2** ([fresh-user-run2.md](docs/verification/fresh-user-run2.md)): a parking-garage gate in JS (3-step witness) and a library-loan system in Python (4-step witness). PASS; 7 points fixed (D14), mainly an INCOMPLETE verdict that now matches exit 3. **Run 3** ([fresh-user-run3.md](docs/verification/fresh-user-run3.md), on the commit "Second audit fixes: …", after all earlier fixes): the Quickstart matched the README line for line. It wired a document-approval workflow in JS: bug, witness, replay, fix, previous witness NOT REPRODUCED, `check` exit 1 then 0, and `--require-exhaustive` passing. Plus a thermostat in Python (7-step witness). PASS; its doc notes (an ESM `.js` note for Node 20, warning wording, the passing-check message) were fixed. **Run 4** ([fresh-user.md](docs/verification/fresh-user.md), Node 20.20, on the commit "Local CI evidence on the current commit", after the third audit's fixes): Quickstart and **every pasted output of the 15-minute guide** matched. It wired a new CommonJS order-fulfilment machine (witness `pay → pack → pack → cancel → ship`; `check` exit 1, then 0) and a Python rate limiter. PASS; its notes were fixed (the Node 20.19+/22.7+ ESM-detection wording, the rename-the-import note, the `inspect` labels hint, and the guide's `inspect` output pasted in full). |
-| Few meaningful tests; CI (lint + tests) green | met | 23 tests (`npm test`). GitHub Actions on the private repo: run [42074948329](https://github.com/vulbsti/reachgate/actions/runs/42074948329): all 6 jobs green, including macOS (CI section below). The same jobs also pass locally in clean containers: [docs/verification/ci-local.md](docs/verification/ci-local.md). |
-| Tag `v0.1.0`, CHANGELOG | met | `git tag` → `v0.1.0`; [CHANGELOG.md](CHANGELOG.md) |
+| Few meaningful tests; CI (lint + tests) green | met | 23 tests (`npm test`). GitHub Actions on the private repo: run [42147493580](https://github.com/vulbsti/reachgate/actions/runs/42147493580) (the last code change before the tag): all 7 jobs green, including macOS and Python 3.9. The first full green run, including macOS, is in the CI section below. The same jobs also pass locally in clean containers: [docs/verification/ci-local.md](docs/verification/ci-local.md). |
+| Tag `v0.1.0`, CHANGELOG | met | `git tag` → `v0.1.0` (pushed to the private repo, on the commit that fills in "Final audit"); [CHANGELOG.md](CHANGELOG.md) `## [0.1.0] - 2026-11-06` |
 
 ### D. Maintainable
 
@@ -181,12 +181,12 @@ evidence itself (read-only). Every finding was fixed and the audit repeated:
 | 3 | FAIL (2 blocker, 1 major) | a force-push can't scrub GitHub (PR refs), so the plan became a fresh repo; a private tool's name in the tree; benchmarks missing the fixed variants (and the `--fixed` flag never reached the adapter) |
 | 4 | FAIL (1 major) | the history-contents statement left files out |
 | 5 | FAIL (1 major) | the history-contents statement left out two kinds of identifier and `DECISIONS.md`; trimmed guide outputs |
-| 6 | AUDIT6_VERDICT | AUDIT6_NOTES |
+| 6 | **PASS** (no blocker, no major) | 5 minors, all fixed before tagging: Python 3.9 was claimed but untested in CI (a `python39` job now runs the adapter example on 3.9), a `gh` flag needing a recent version, a Dependabot note that said two different things, CI and release wording in CONTRIBUTING, and "each fixed variant exhausts" while `#deepFixed` is Go-Explore |
 
 Alongside them, four fresh-user runs (C) each found friction that was fixed before the next.
 
 At the tagged commit:
 - `npm test`: 23 passing. `npm run lint`: clean.
 - gitleaks: no leaks. `claude plugin validate .`: passed.
-- GitHub Actions on the tagged commit: CI_RUN.
+- GitHub Actions: run [42147493580](https://github.com/vulbsti/reachgate/actions/runs/42147493580), on the last code change before the tag (commit "Audit 6 minors: …"). All 7 jobs are green: lint, gate, `python39`, and test on ubuntu/macOS × Node 20/22. The tag commit only fills in this section.
 - Commit references here are by subject, not SHA, because the history rewrite in BLOCKED.md B2 changes every SHA.
