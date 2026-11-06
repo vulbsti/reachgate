@@ -4,7 +4,9 @@
 
 - **What:** older commits on the private remote mention the owner's private projects. The source game's
   short name and character names, an earlier QA tool's name, a private tool's name, local paths and
-  the owner's own name all appear in old docs, comments and `VERIFICATION.md` rows. **The current tree
+  the owner's own name, work email domain and second GitHub account handle all appear in older revisions of
+  `VERIFICATION.md`, `DECISIONS.md`, `BLOCKED.md`, `RELEASE.md`, `docs/architecture.md`, `src/baseline.mjs`,
+  `src/rng.mjs` and `assets/src/hero-prompt.md`. **The current tree
   is clean.** The repo is private, so nothing has leaked.
 - **Why a force-push isn't enough:** GitHub keeps old commits reachable after a force-push, through PR
   refs (`refs/pull/1..3/head` from the Dependabot PRs) and Actions run pages. The clean history has to

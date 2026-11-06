@@ -98,7 +98,7 @@ page says where each tool is stronger.
 | The owner's live tools left untouched | met | Never accessed: no file, timer or data directory outside this repo, the source folders (read only) and the session-notes folder was written. |
 | No personal data, tokens, `.env`, transcripts | met | Fixtures are synthetic (examples, guide). See the scan below. |
 | gitleaks over full history: 0 findings | met | `docker run --rm -v "$PWD:/r" zricethezav/gitleaks git /r` → `no leaks found` (rerun on the final commit in the audit section). |
-| grep for local paths, work domain, owner's name, emails | met for the tree / **blocked** for history (B2) | Two out-of-repo lists (whole-word terms; path and identifier substrings): current tree → 0 matches; `scrubbed-main` history → 0 matches. `main` history → many matches across older revisions of several files (docs, source comments, `VERIFICATION.md`, `BLOCKED.md`, `RELEASE.md`, `assets/src/hero-prompt.md`). The kinds are listed in BLOCKED.md B2 (the source game's short and character names, an earlier QA tool's name, a private tool's name, local paths and a session ID, the owner's name). Emails: `git grep -hIoE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[a-z]{2,}' $(git rev-list main) \| sort -u` → only the GitHub noreply address. gitleaks finds no secrets. |
+| grep for local paths, work domain, owner's name, emails | met for the tree / **blocked** for history (B2) | Two out-of-repo lists (whole-word terms; path and identifier substrings): current tree → 0 matches; `scrubbed-main` history → 0 matches. `main` history → matches in older revisions of `VERIFICATION.md`, `DECISIONS.md`, `BLOCKED.md`, `RELEASE.md`, `docs/architecture.md`, `src/baseline.mjs`, `src/rng.mjs` and `assets/src/hero-prompt.md`: the source game's short and character names, an earlier QA tool's name, a private tool's name, local paths and a session ID, and the owner's name, work email domain and second GitHub account handle (all listed in BLOCKED.md B2). Emails: `git grep -hIoE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[a-z]{2,}' $(git rev-list main) \| sort -u` → only the GitHub noreply address. gitleaks finds no secrets. |
 
 ### C. Usable by other people
 
@@ -125,7 +125,7 @@ page says where each tool is stronger.
 | Architecture diagram, SVG, light and dark | met | `assets/architecture-{light,dark}.svg` via `<picture>`; checked in `assets/src/preview-{light,dark}.png` |
 | Demo GIF of the real tool | met | `assets/demo.gif` (342 KB, VHS in Docker running the real CLI; `assets/src/demo/{Dockerfile,demo.tape}`) |
 | Explainer visual | met | `assets/explore-coverage-{light,dark}.svg`, drawn from real BFS and Go-Explore runs by `assets/src/explainer/coverage.mjs` |
-| Sources in `assets/src/`; each image < 2 MB; README media < 10 MB | met | README media total 595 KB (`du -ch assets/hero.jpg assets/demo.gif assets/*.svg`) |
+| Sources in `assets/src/`; each image < 2 MB; README media < 10 MB | met | README media total 608,999 bytes (`du -cb assets/hero.jpg assets/demo.gif assets/architecture-*.svg assets/explore-coverage-*.svg`) |
 | Every asset checked in light and dark | met | Hero and diagrams: `assets/src/preview-{light,dark}.png` (README mock-up screenshots); the diagrams again after their last edit: `assets/src/checks/architecture-{light,dark}.png`. Explainer: `assets/src/checks/explainer-{light,dark}.png`. Demo GIF (re-recorded after the last output change): `assets/src/checks/demo-frame-{14,33}s.png`. |
 
 ### F. Honesty
@@ -171,7 +171,22 @@ to clear the queue.
 
 ## Final audit
 
-_Filled in after the audit runs._
+Each audit was a fresh subagent with no context, told to treat every claim as false until it re-ran the
+evidence itself (read-only). Every finding was fixed and the audit repeated:
 
+| Audit | Verdict | What it found (all fixed) |
+| --- | --- | --- |
+| 1 | FAIL (1 blocker, 3 major) | README promised adapter batching that the roadmap didn't list; private game terms in an evidence command; a grep claim that counted its own row; a fresh-user transcript that predated output changes |
+| 2 | FAIL (1 blocker, 4 major) | a private project's path in `hero-prompt.md` that the term list missed; local paths and a session ID in docs; stale pasted outputs; commit references that wouldn't survive the history rewrite; the G row missing B2 |
+| 3 | FAIL (2 blocker, 1 major) | a force-push can't scrub GitHub (PR refs), so the plan became a fresh repo; a private tool's name in the tree; benchmarks missing the fixed variants (and the `--fixed` flag never reached the adapter) |
+| 4 | FAIL (1 major) | the history-contents statement left files out |
+| 5 | FAIL (1 major) | the history-contents statement left out two kinds of identifier and `DECISIONS.md`; trimmed guide outputs |
+| 6 | AUDIT6_VERDICT | AUDIT6_NOTES |
 
-Commit references here are by subject, not SHA, because the history rewrite in BLOCKED.md B2 changes every SHA.
+Alongside them, four fresh-user runs (C) each found friction that was fixed before the next.
+
+At the tagged commit:
+- `npm test`: 23 passing. `npm run lint`: clean.
+- gitleaks: no leaks. `claude plugin validate .`: passed.
+- GitHub Actions on the tagged commit: CI_RUN.
+- Commit references here are by subject, not SHA, because the history rewrite in BLOCKED.md B2 changes every SHA.

@@ -166,6 +166,7 @@ Fix it (`m.credit = 0;` after giving change) and explore again:
 ```
 $ reachgate explore
 PASS: 0 invariants violated · 179 states, 681 steps, 8 labels · state space exhausted · 11 ms
+report: .reachgate/report.md
 ```
 
 Each run moves the previous run's witnesses to `.reachgate/witnesses/previous/`, so the old trace can
@@ -213,7 +214,14 @@ Before: 179 states (exhaustive). After: 89 states (exhaustive). Failing on: lost
 
 - `dispensed:cola`: the baseline witness still replays all 3 step(s), but "dispensed:cola" no longer shows up anywhere along it: the code behaves differently on the same steps.
   Baseline witness: insert 50 → insert 100 → select cola (`.reachgate/witnesses/lost_dispensed_cola.json`)
-- `sold-out:cola`: ...
+- `sold-out:cola`: the baseline witness still replays all 3 step(s), but "sold-out:cola" no longer shows up anywhere along it: the code behaves differently on the same steps.
+  Baseline witness: insert 50 → insert 100 → select cola (`.reachgate/witnesses/lost_sold-out_cola.json`)
+
+## What to do
+
+1. Replay a witness to see the regression step by step: `reachgate replay ./reachgate.target.mjs <witness file>` (files listed above).
+2. If the change in behaviour is a bug, fix the code and run `reachgate check` again.
+3. If it is intended (a feature removed on purpose), say why in the PR and run `reachgate baseline` to accept it.
 ```
 
 Exit code 1 fails CI. If you meant to change the behaviour, say why in the PR and run `reachgate

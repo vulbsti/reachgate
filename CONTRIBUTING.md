@@ -25,7 +25,7 @@ There is no build step: `src/` is the code that ships. Run the CLI from the chec
 ## Running tests, lint and benchmarks
 
 ```sh
-npm test        # node --test test/
+npm test        # node --test test/*.test.mjs
 npm run lint    # ESLint on the JavaScript, then py_compile (and ruff if present) on the Python
 npm run bench   # benchmarks; results are described in docs/benchmarks.md
 ```
