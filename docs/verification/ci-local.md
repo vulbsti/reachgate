@@ -1,8 +1,8 @@
 # Local CI replica
 
-GitHub Actions can't run until the repo is pushed (BLOCKED.md B1), so `scripts/ci-local.sh` runs the same jobs (lint, test, gate) in clean `node:20` / `node:22` Docker containers on the committed tree. macOS isn't covered locally.
+The same jobs as `.github/workflows/ci.yml` (lint, test, gate), run by `scripts/ci-local.sh` in clean `node:20` / `node:22` Docker containers on the committed tree. They complement the GitHub Actions runs cited in VERIFICATION.md (which also cover macOS).
 
-Run 2026-11-05T17:08Z.
+Commit: "Third audit fixes: fresh-repo plan for the history scrub, private tool…", run 2026-11-06T01:26Z.
 
 ```
 === node 20 ===
@@ -11,8 +11,8 @@ check-python: py_compile ok (4 files)
 All checks passed!
 check-python: ruff check ok
 --- test
-# tests 21
-# pass 21
+# tests 23
+# pass 23
 # fail 0
 --- gate
 fixed: exit 0
@@ -23,8 +23,8 @@ check-python: py_compile ok (4 files)
 All checks passed!
 check-python: ruff check ok
 --- test
-# tests 21
-# pass 21
+# tests 23
+# pass 23
 # fail 0
 --- gate
 fixed: exit 0
