@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.0] - 2026-11-05
+## [0.1.0] - 2026-11-06
 
 ### Added
 
@@ -24,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`adapters/python/reachgate_adapter.py`).
 - Examples: dungeon game, todo reducer, auth session, Python checkout.
 - Agent skill for coding agents.
+- `--require-exhaustive`: a search that stopped on a budget exits 3 with an INCOMPLETE verdict instead of passing.
+- Verdict lines never say PASS when the exit code isn't 0 (INCOMPLETE, COULD NOT MEASURE).
+- The previous run's witnesses are kept in `.reachgate/witnesses/previous/`, so `replay` can confirm a fix.
 
 [Unreleased]: https://github.com/vulbsti/reachgate/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/vulbsti/reachgate/releases/tag/v0.1.0

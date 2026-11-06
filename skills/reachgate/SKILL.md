@@ -17,7 +17,7 @@ Run it with `reachgate` (or `npx reachgate` once it is published to npm).
 2. Exit code 0 means PASS. Quote the verdict line in your summary or PR: the bold `**PASS: …**` line
    near the top of `.reachgate/diff.md` (also printed by `reachgate check`).
 3. Exit code 1 means FAIL. Read `.reachgate/diff.md`, which lists:
-   - **Newly violated invariants**, each with a shortest witness. Replay it with
+   - **Newly violated invariants**, each with a witness (shortest with the default BFS; 1-minimal with Go-Explore). Replay it with
      `reachgate replay .reachgate/witnesses/<id>.json` to see each step and the state where it breaks.
      Fix the code; don't weaken the invariant unless it is wrong, and if it is, say so explicitly.
    - **No longer reachable**: labels that the old witness can't reach any more, with the step where it

@@ -222,7 +222,7 @@ async function inspect(driver, say) {
   say(`deadlock detection: ${driver.deadlock ? 'on (isTerminal is defined)' : `off (define ${driver.kind === 'adapter' ? 'is_terminal (Python helper) or report terminal in visit' : 'isTerminal'} to turn it on)`}`);
   say(`initial state: ${short(s)}`);
   say(`  hash ${info.hash}${info.cell ? ` · cell ${info.cell}` : ''}`);
-  say(`  labels: ${info.labels.join(', ') || '(none: add observe(state) to name behaviour for the baseline)'}`);
+  say(`  labels: ${info.labels.join(', ') || '(none in this state; labels come from observe(state), which names behaviour for the baseline)'}`);
   say(`  violations: ${info.violations.map((v) => v.id).join(', ') || 'none'}`);
   say(`  ${info.actions.length} action(s):`);
   for (const a of info.actions.slice(0, 20)) {

@@ -49,7 +49,7 @@ npm pack --dry-run               # check the file list: bin, src, templates, ada
 npm publish --access public
 ```
 
-Then `npm install -g reachgate` and `npx reachgate` (the README's install line) work for everyone.
+Then `npm install -g reachgate` and `npx reachgate` work for everyone. Update the README's Install section to lead with `npm install -g reachgate`.
 
 ## 4. Claude Code plugin
 

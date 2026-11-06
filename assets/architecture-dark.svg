@@ -82,7 +82,7 @@
   <text class="sm muted" x="44" y="490">JSON Lines over stdio; the adapter is</text>
   <text class="sm muted" x="44" y="508">stateless, reachgate owns every state</text>
   <text class="mono" x="44" y="540">hello · initial · visit · step</text>
-  <text class="sm muted" x="44" y="560">one request per line, full state in each</text>
+  <text class="sm muted" x="44" y="560">+ shutdown · full state in every request</text>
   <text class="mono sm muted" x="44" y="584">$ reachgate explore my_target.py</text>
 
   <!-- both ways in converge on the driver -->

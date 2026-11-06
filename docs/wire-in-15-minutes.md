@@ -8,9 +8,10 @@ steps with `reachgate init --lang python` (see the end).
 
 ## 0. The code you already have (`src/vending.js`)
 
-It's an ES module, so the project's `package.json` has `"type": "module"`. Without that, name the file
-`vending.mjs`: Node 22 detects ES module syntax in `.js` files on its own, but Node 20 does not. A
-CommonJS project can `import` its `require`-style modules from the target as usual.
+It's an ES module. Node 20.19+ and 22.7+ detect ES module syntax in a `.js` file on their own. On older
+versions, give the project's `package.json` `"type": "module"`, or name the file `vending.mjs` (and
+import `./src/vending.mjs` in the target). A CommonJS project can `import` its `require`-style modules
+from the target as usual.
 
 ```js
 export const PRICES = { cola: 150, chips: 100 };
@@ -102,7 +103,7 @@ What each hook is for:
 | `label(a)` | How an action prints in witnesses. |
 | `isTerminal(s)` | Optional. Defining it turns on deadlock detection. |
 | `hash(s)` / `abstract(s)` | Optional. Exact identity, and a coarse cell for `--strategy go-explore`. |
-| `clone(s)` | Optional. Defaults to `structuredClone`. If your `step` never mutates its input (an immutable reducer), use `clone: (s) => s`. In the todo-reducer example that halves the run time. |
+| `clone(s)` | Optional. Defaults to `structuredClone`. If your `step` never mutates its input (an immutable reducer), use `clone: (s) => s`. In the todo-reducer example that makes it about a third faster. |
 
 Two things to get right:
 
@@ -119,7 +120,16 @@ Two things to get right:
 $ reachgate inspect
 target: vending (in-process: ./reachgate.target.mjs)
 invariants: money-conserved, stock-non-negative
-...
+deadlock detection: off (define isTerminal to turn it on)
+initial state: {"inserted":0,"m":{"cashbox":0,"credit":0,"dispensed":[],"returned":0,"stock":{"chips":2,"cola":1}}}
+  hash QpL9RsiledAyblPloAqHZUj3aRA
+  labels: (none in this state; labels come from observe(state), which names behaviour for the baseline)
+  violations: none
+  4 action(s):
+    insert 50  →  new state
+    insert 100  →  new state
+    select cola  →  same state
+    select chips  →  same state
 ```
 
 It shows the initial state, its actions, and whether each action leads somewhere new. An empty action

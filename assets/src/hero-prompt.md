@@ -1,7 +1,7 @@
 # Hero image: prompts and command
 
-`assets/hero.jpg` (1600x640, JPEG q86) was generated with gpt-6-luna through `codex exec` (ChatGPT
-plan, a minimal `codex exec` call), then cropped to 2.5:1 with Pillow.
+`assets/hero.jpg` (1600x640, JPEG q86) was generated with gpt-6-luna through a minimal `codex exec` call
+(ChatGPT plan), then cropped to 2.5:1 with Pillow.
 Four candidates (a-d); **d was picked**.
 
 ## Command
