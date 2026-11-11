@@ -98,7 +98,7 @@ page says where each tool is stronger.
 | The owner's live tools left untouched | met | Never accessed: no file, timer or data directory outside this repo, the source folders (read only) and the session-notes folder was written. |
 | No personal data, tokens, `.env`, transcripts | met | Fixtures are synthetic (examples, guide). See the scan below. |
 | gitleaks over full history: 0 findings | met | `docker run --rm -v "$PWD:/r" zricethezav/gitleaks git /r` → `no leaks found` (rerun on the final commit in the audit section). |
-| grep for local paths, work domain, owner's name, emails | met for the tree / **blocked** for history (B2) | Two out-of-repo lists (whole-word terms; path and identifier substrings): current tree → 0 matches; `scrubbed-main` history → 0 matches. `main` history → matches in older revisions of `VERIFICATION.md`, `DECISIONS.md`, `BLOCKED.md`, `RELEASE.md`, `docs/architecture.md`, `src/baseline.mjs`, `src/rng.mjs` and `assets/src/hero-prompt.md`: the source game's short and character names, an earlier QA tool's name, a private tool's name, local paths and a session ID, and the owner's name, work email domain and second GitHub account handle (all listed in BLOCKED.md B2). Emails: `git grep -hIoE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[a-z]{2,}' $(git rev-list main) \| sort -u` → only the GitHub noreply address. gitleaks finds no secrets. |
+| Private-terms scan (lists kept outside the repo) | met | Current tree and every commit in the published history: 0 matches against the out-of-repo term and path lists and the owner's private-terms list. The pre-scrub history is archived privately as `vulbsti/reachgate-private-history` (BLOCKED.md → Resolved, B2). Emails: `git grep -hIoE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[a-z]{2,}' $(git rev-list main) \| sort -u` → only the GitHub noreply address. gitleaks finds no secrets. |
 
 ### C. Usable by other people
 
@@ -148,7 +148,7 @@ page says where each tool is stronger.
 | --- | --- | --- |
 | Manager delegated and verified | met | Subagents built the examples, hygiene, visuals and alternatives research. The manager re-ran every example command, found and fixed core bugs during review (un-awaited `return` in try/finally, EPIPE exit code, adapter shutdown timer, Node 22 `npm test`), and added `--require-exhaustive`. |
 | No questions to the owner; decisions recorded | met | [DECISIONS.md](DECISIONS.md) D1–D14 |
-| Owner-only items in BLOCKED.md | met | [BLOCKED.md](BLOCKED.md): **B2 open** (archive this repo and push the scrubbed history to a fresh one; gates going public); B1 resolved. The stale Dependabot PRs stay behind in the archived repo, and Dependabot opens fresh ones on the new repo. |
+| Owner-only items in BLOCKED.md | met | [BLOCKED.md](BLOCKED.md): nothing open; B1 and B2 resolved. Going public and publishing are in RELEASE.md. |
 | Final adversarial audit passes | met | See "Final audit" below. |
 
 ## CI on GitHub

@@ -15,11 +15,9 @@ docker run --rm -v "$PWD:/r" zricethezav/gitleaks git /r     # expect "no leaks 
 git log --format='%an <%ae>' | sort -u                        # expect only the GitHub noreply address
 ```
 
-## 0b. Required before going public: scrub history
+## 0b. History scrub: done
 
-Follow [BLOCKED.md](BLOCKED.md) B2: archive the current private repo under another name, and push the
-scrubbed history to a freshly created `vulbsti/reachgate`. A force-push is not enough, because GitHub
-keeps old commits reachable through PR refs and Actions runs. Do not make any repo public until that is done.
+Done on 2026-11-12 (BLOCKED.md → Resolved, B2). If anything private is ever pushed again, recreate the repo from a scrubbed history; a force-push is not enough.
 
 ## 1. Make the GitHub repository public
 
@@ -34,7 +32,7 @@ GH_TOKEN=$(gh auth token -u vulbsti) gh api repos/vulbsti/reachgate/private-vuln
 
 ## 2. Publish a GitHub release for v0.1.0
 
-The tag `v0.1.0` is pushed to the new repo in B2 step 3.
+The tag `v0.1.0` is already on the new repo.
 
 ```bash
 GH_TOKEN=$(gh auth token -u vulbsti) gh release create v0.1.0 --title "reachgate 0.1.0" --notes-file <(awk '/^## \[0.1.0\]/{on=1; next} on && /^(## \[|\[[^]]+\]: )/{exit} on' CHANGELOG.md)
