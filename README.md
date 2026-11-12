@@ -30,7 +30,7 @@ Once the package is published to npm (not yet), this becomes `npm install -g rea
 Or from a clone: `git clone https://github.com/vulbsti/reachgate && npm install -g ./reachgate`. That
 links the clone, so keep it. Once the package is on npm, `npx reachgate ...` works without installing.
 
-**Supported:** Node.js 20 or newer on Linux and macOS (both tested in CI on Node 20 and 22). Windows is
+**Supported:** Node.js 20 or newer on Linux and macOS (Linux tested in CI on Node 20 and 22; macOS on manual CI runs). Windows is
 untested. Python 3.9+ for Python targets.
 
 ## Quickstart

@@ -31,7 +31,7 @@ npm run bench   # benchmarks; results are described in docs/benchmarks.md
 ```
 
 Please run `npm test` and `npm run lint` before opening a pull request. CI runs both on
-Linux and macOS with Node 20 and 22 (lint runs once, on Linux with Node 22), and the Python adapter
+Linux with Node 20 and 22 (lint runs once, with Node 22); macOS runs only on manual dispatch, and the Python adapter
 example is also tested on Python 3.9.
 
 As a quick end-to-end check, the bundled examples should still give the expected verdicts:
